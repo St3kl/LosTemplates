@@ -88,3 +88,26 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="images"
+    )
+
+    image = models.ImageField(
+        upload_to="product_gallery/"
+    )
+
+    alt_text = models.CharField(
+        max_length=255,
+        blank=True
+    )
+
+    display_order = models.PositiveIntegerField(
+        default=0
+    )
+
+    def __str__(self):
+        return f"{self.product.title} Image"
