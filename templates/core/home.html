@@ -1,23 +1,30 @@
-<!-- templates/core/home.html -->
+
 
 {% extends "base.html" %}
 
 {% block content %}
 
-<div class="text-center">
+<div class="text-center mb-5">
+    <h1>Welcome to LosTemplates</h1>
 
-    <h1 class="display-4">
-        Welcome to LosTemplates
-    </h1>
+    <p>Premium templates for developers, creators, and businesses.</p>
+</div>
 
-    <p class="lead">
-        Premium templates for developers, creators, and businesses.
-    </p>
+<h2 class="mb-4">Featured Templates</h2>
 
-    <a href="#" class="btn btn-primary btn-lg">
-        Browse Templates
-    </a>
+<div class="row">
+    {% for product in featured_products %}
 
+        <div class="col-md-4 mb-4">
+            {% include "components/product_card.html" %}
+        </div>
+
+    {% empty %}
+
+        <p>No featured products available yet.</p>
+
+    {% endfor %}
 </div>
 
 {% endblock %}
+
