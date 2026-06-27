@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <!-- PRODUCT HEADER -->
+    <div class="row g-5">
+
+        <!-- IMAGE SECTION -->
+        <div class="col-lg-6">
+
+            <div class="bg-white p-3 shadow-sm rounded">
+
+                <img src="{{ product.thumbnail.url }}"
+                     class="img-fluid rounded"
+                     alt="{{ product.title }}">
+
+            </div>
+
+        </div>
+
+        <!-- INFO SECTION -->
+        <div class="col-lg-6">
+
+            <h1 class="fw-bold">
+
+                {{ product.title }}
+
+            </h1>
+
+            <p class="text-muted">
+
+                {{ product.short_description }}
+
+            </p>
+
+            <h3 class="text-primary">
+
+                ${{ product.price }}
+
+            </h3>
+
+            <div class="mt-3">
+
+                <p><strong>Category:</strong> {{ product.category.name }}</p>
+
+                <p><strong>Version:</strong> {{ product.version }}</p>
+
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+
+                <button class="btn btn-primary btn-lg">
+
+                    Buy Now
+
+                </button>
+
+                <button class="btn btn-outline-secondary btn-lg">
+
+                    Preview
+
+                </button>
+
+            </div>
+
+            <div class="mt-3 text-muted small">
+
+                ⚡ Instant Download after purchase<br>
+                🔒 Secure payment system (coming soon)<br>
+                ♾ Lifetime updates
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- DESCRIPTION -->
+    <div class="mt-5">
+
+        <h3>Description</h3>
+
+        <p class="text-muted">
+
+            {{ product.description }}
+
+        </p>
+
+    </div>
+
+    <!-- FEATURES BLOCK (placeholder structure) -->
+    <div class="mt-5">
+
+        <h3>What’s Included</h3>
+
+        <ul class="list-group list-group-flush">
+
+            <li class="list-group-item">Fully Responsive Design</li>
+
+            <li class="list-group-item">Clean Code Structure</li>
+
+            <li class="list-group-item">Easy Customization</li>
+
+            <li class="list-group-item">Documentation Included</li>
+
+        </ul>
+
+    </div>
+
+    <!-- RELATED PRODUCTS -->
+    <div class="mt-5">
+
+        <h3>Related Templates</h3>
+
+        <div class="row g-4 mt-2">
+
+            {% for product in related_products %}
+
+                <div class="col-md-3">
+
+                    {% include "components/product_card.html" %}
+
+                </div>
+
+            {% empty %}
+
+                <p class="text-muted">
+
+                    No related products found.
+
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

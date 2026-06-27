@@ -1,0 +1,64 @@
+:root{
+
+    --primary:#2563EB;
+    --primary-hover:#1D4ED8;
+
+    --dark:#111827;
+
+    --light:#F8FAFC;
+
+    --gray:#6B7280;
+
+    --success:#22C55E;
+
+    --danger:#EF4444;
+
+    --warning:#F59E0B;
+
+    --radius:12px;
+
+    --transition:.3s;
+
+}
+
+body{
+
+    font-family:'Inter',sans-serif;
+
+    background:var(--light);
+
+    color:var(--dark);
+
+}
+
+h1,
+h2,
+h3,
+h4,
+h5{
+
+    font-family:'Poppins',sans-serif;
+
+}
+
+a{
+
+    text-decoration:none;
+
+}
+
+.btn-primary{
+
+    background:var(--primary);
+
+    border:none;
+
+    border-radius:var(--radius);
+
+}
+
+.btn-primary:hover{
+
+    background:var(--primary-hover);
+
+}

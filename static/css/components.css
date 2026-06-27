@@ -1,0 +1,40 @@
+.hero-section {
+    padding-top: 80px;
+    padding-bottom: 80px;
+}
+
+.hero-section h1 {
+    line-height: 1.2;
+}
+
+.hero-visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.product-card {
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    transform: scale(1.05);
+}
+
+.product-card img {
+    height: 180px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+
+
+.list-group-item {
+    border: none;
+    padding-left: 0;
+}

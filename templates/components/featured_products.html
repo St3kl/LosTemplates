@@ -1,0 +1,39 @@
+<section class="py-5">
+
+    <div class="container">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <h2 class="fw-bold mb-0">
+                Featured Templates
+            </h2>
+
+            <a href="/products/" class="text-primary">
+                View all →
+            </a>
+
+        </div>
+
+        <div class="row g-4">
+
+            {% for product in featured_products %}
+
+                <div class="col-md-4 col-lg-4">
+
+                    {% include "components/product_card.html" %}
+
+                </div>
+
+            {% empty %}
+
+                <p class="text-muted">
+                    No featured products available yet.
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
