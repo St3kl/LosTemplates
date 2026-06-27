@@ -1,6 +1,9 @@
 from django.shortcuts import get_object_or_404, render
 
 from .models import Product, Category
+from django.http import FileResponse, Http404
+from django.contrib.auth.decorators import login_required
+import os
 
 
 def product_list(request):
@@ -63,4 +66,21 @@ def product_detail(request, slug):
     }
 
     return render(request, "products/product_detail.html", context)
+
+
+@login_required
+def download_product(request, slug):
+
+    product = get_object_or_404(Product, slug=slug, active=True)
+
+    file_path = product.download_file.path
+
+    if not os.path.exists(file_path):
+        raise Http404("File not found")
+
+    return FileResponse(
+        open(file_path, "rb"),
+        as_attachment=True,
+        filename=os.path.basename(file_path)
+    )
 # Create your views here.
