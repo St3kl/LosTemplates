@@ -55,12 +55,27 @@
 
             </form>
 
-            <button
-                class="btn btn-primary">
+            {% if user.is_authenticated %}
 
-                Login
+    <span class="me-3">
+        Hello, {{ user.username }}
+    </span>
 
-            </button>
+    <a href="/accounts/logout/" class="btn btn-outline-danger">
+        Logout
+    </a>
+
+{% else %}
+
+    <a href="/accounts/login/" class="btn btn-outline-primary me-2">
+        Login
+    </a>
+
+    <a href="/accounts/register/" class="btn btn-primary">
+        Register
+    </a>
+
+{% endif %}
 
         </div>
 
