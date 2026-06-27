@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, render
-
+from apps.orders.models import Order
 from .models import Product, Category
 from django.http import FileResponse, Http404
 from django.contrib.auth.decorators import login_required
@@ -72,6 +72,16 @@ def product_detail(request, slug):
 def download_product(request, slug):
 
     product = get_object_or_404(Product, slug=slug, active=True)
+
+    # CHECK OWNERSHIP
+    has_order = Order.objects.filter(
+        user=request.user,
+        product=product,
+        paid=True
+    ).exists()
+
+    if not has_order:
+        return redirect("product_detail", slug=slug)
 
     file_path = product.download_file.path
 
