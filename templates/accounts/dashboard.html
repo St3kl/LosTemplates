@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <h1 class="mb-4">
+
+        Welcome, {{ request.user.username }}
+
+    </h1>
+
+    <div class="row mb-5">
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm">
+
+                <div class="card-body">
+
+                    <h5>Total Purchases</h5>
+
+                    <h2>{{ total_orders }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <h3 class="mb-4">
+
+        My Downloads
+
+    </h3>
+
+    <div class="row">
+
+        {% for order in orders %}
+
+            <div class="col-md-4 mb-4">
+
+                <div class="card h-100">
+
+                    <img
+                        src="{{ order.product.thumbnail.url }}"
+                        class="card-img-top"
+                        alt="{{ order.product.title }}">
+
+                    <div class="card-body">
+
+                        <h5>
+
+                            {{ order.product.title }}
+
+                        </h5>
+
+                        <p class="text-muted">
+
+                            {{ order.product.short_description }}
+
+                        </p>
+
+                        <a
+                           href="{% url 'product_download' order.product.slug %}"
+                           class="btn btn-primary">
+
+                            Download
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            <p>
+
+                You haven't purchased any templates yet.
+
+            </p>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}
