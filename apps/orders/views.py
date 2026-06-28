@@ -1,25 +1,29 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-
-from apps.products.models import Product
-from .models import Order, OrderItem
-from .models import Order
 from django.http import FileResponse, Http404
 import os
 
+from apps.products.models import Product
+from .models import Order, OrderItem
+from .services import user_can_access_item
 
+
+# -------------------------
+# SINGLE PRODUCT PURCHASE
+# -------------------------
 @login_required
 def purchase_product(request, slug):
 
     product = get_object_or_404(Product, slug=slug, active=True)
 
+    # Get or create order (NO total_price in lookup)
     order, created = Order.objects.get_or_create(
         user=request.user,
-        status="pending",
-        total_price=product.price
+        status="pending"
     )
 
+    # Add item if not exists
     OrderItem.objects.get_or_create(
         order=order,
         product=product,
@@ -29,6 +33,9 @@ def purchase_product(request, slug):
     return redirect("product_detail", slug=slug)
 
 
+# -------------------------
+# CART CHECKOUT
+# -------------------------
 @login_required
 def checkout(request):
 
@@ -46,12 +53,14 @@ def checkout(request):
         products.append(product)
         total += product.price
 
+    # Create order
     order = Order.objects.create(
         user=request.user,
         status="pending",
         total_price=0
     )
 
+    # Create items
     for product in products:
         OrderItem.objects.create(
             order=order,
@@ -59,9 +68,11 @@ def checkout(request):
             price=product.price
         )
 
+    # Update total
     order.total_price = total
     order.save()
 
+    # Clear cart
     request.session["cart"] = []
 
     messages.success(request, "Order created successfully!")
@@ -69,12 +80,16 @@ def checkout(request):
     return redirect("orders:success")
 
 
+# -------------------------
+# SUCCESS PAGE
+# -------------------------
 def order_success(request):
     return render(request, "orders/success.html")
 
 
-
-
+# -------------------------
+# ORDER DETAIL
+# -------------------------
 @login_required
 def order_detail(request, order_id):
 
@@ -89,7 +104,11 @@ def order_detail(request, order_id):
         "orders/detail.html",
         {"order": order}
     )
-    
+
+
+# -------------------------
+# ORDER LIST
+# -------------------------
 @login_required
 def order_list(request):
 
@@ -102,21 +121,26 @@ def order_list(request):
         "orders/list.html",
         {"orders": orders}
     )
-    
+
+
+# -------------------------
+# SECURE DOWNLOAD SYSTEM
+# -------------------------
 @login_required
 def download_product(request, item_id):
 
-    item = get_object_or_404(
-        OrderItem,
-        id=item_id,
-        order__user=request.user
-    )
+    # Security check (ownership + paid access)
+    if not user_can_access_item(request.user, item_id):
+        raise Http404("You do not have access to this file.")
+
+    item = get_object_or_404(OrderItem, id=item_id)
 
     file_path = item.product.download_file.path
 
     if not os.path.exists(file_path):
         raise Http404("File not found")
 
+    # Mark as downloaded
     item.downloaded = True
     item.save()
 

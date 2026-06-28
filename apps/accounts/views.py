@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from apps.orders.models import Order
+from apps.orders.models import OrderItem
 
 
 def login_view(request):
@@ -70,4 +71,20 @@ def dashboard(request):
         "accounts/dashboard.html",
         context
     )
+    
+    
+    
+@login_required
+def downloads_view(request):
+
+    items = OrderItem.objects.filter(
+        order__user=request.user,
+        order__status="paid"
+    ).select_related("product", "order")
+
+    return render(
+        request,
+        "accounts/downloads.html",
+        {"items": items}
+    )   
 # Create your views here.
