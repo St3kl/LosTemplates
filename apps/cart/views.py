@@ -57,3 +57,23 @@ def add_to_cart(request, product_id):
     request.session["cart"] = cart
 
     return redirect("cart:cart")
+
+@require_POST
+def remove_from_cart(request, product_id):
+    cart = request.session.get("cart", {})
+
+    product = get_object_or_404(Product, id=product_id)
+
+    product_id = str(product.id)
+
+    if product_id in cart:
+        del cart[product_id]
+
+        messages.success(
+            request,
+            f'"{product.title}" removed from your cart.'
+        )
+
+    request.session["cart"] = cart
+
+    return redirect("cart:cart")

@@ -23,6 +23,7 @@ Shopping Cart
                     <th>Price</th>
                     <th>Quantity</th>
                     <th>Subtotal</th>
+                    <th>Action</th>
                 </tr>
 
             </thead>
@@ -33,15 +34,64 @@ Shopping Cart
 
                 <tr>
 
-                    <td>{{ item.product.title }}</td>
+    <td>
 
-                    <td>${{ item.product.price }}</td>
+        <div class="d-flex align-items-center">
 
-                    <td>{{ item.quantity }}</td>
+            <img
+                src="{{ item.product.thumbnail.url }}"
+                width="80"
+                class="rounded me-3"
+                alt="{{ item.product.title }}">
 
-                    <td>${{ item.subtotal }}</td>
+            <div>
 
-                </tr>
+                <strong>{{ item.product.title }}</strong>
+
+            </div>
+
+        </div>
+
+    </td>
+
+    <td>
+
+        ${{ item.product.price }}
+
+    </td>
+
+    <td>
+
+        {{ item.quantity }}
+
+    </td>
+
+    <td>
+
+        ${{ item.subtotal }}
+
+    </td>
+
+    <td>
+
+        <form
+            action="{% url 'cart:remove' item.product.id %}"
+            method="post">
+
+            {% csrf_token %}
+
+            <button
+                class="btn btn-danger btn-sm">
+
+                Remove
+
+            </button>
+
+        </form>
+
+    </td>
+
+</tr>
 
             {% endfor %}
 
