@@ -30,7 +30,7 @@ Shopping Cart
 
             <tbody>
 
-            {% for item in products %}
+            {% for product in products %}
 
                 <tr>
 
@@ -39,14 +39,14 @@ Shopping Cart
         <div class="d-flex align-items-center">
 
             <img
-                src="{{ item.product.thumbnail.url }}"
+                src="{{ product.thumbnail.url }}"
                 width="80"
                 class="rounded me-3"
-                alt="{{ item.product.title }}">
+                alt="{{ product.title }}">
 
             <div>
 
-                <strong>{{ item.product.title }}</strong>
+                <strong>{{ product.title }}</strong>
 
             </div>
 
@@ -56,26 +56,26 @@ Shopping Cart
 
     <td>
 
-        ${{ item.product.price }}
+        ${{ product.price }}
 
     </td>
 
-    <td>
+    {% comment %} <td>
 
         {{ item.quantity }}
 
-    </td>
+    </td> {% endcomment %}
 
     <td>
 
-        ${{ item.subtotal }}
+        ${{ product.price }}
 
     </td>
 
     <td>
 
         <form
-            action="{% url 'cart:remove' item.product.id %}"
+            action="{% url 'cart:remove' product.id %}"
             method="post">
 
             {% csrf_token %}
