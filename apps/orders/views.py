@@ -5,6 +5,8 @@ from django.contrib import messages
 from apps.products.models import Product
 from .models import Order, OrderItem
 from .models import Order
+from django.http import FileResponse, Http404
+import os
 
 
 @login_required
@@ -99,4 +101,27 @@ def order_list(request):
         request,
         "orders/list.html",
         {"orders": orders}
+    )
+    
+@login_required
+def download_product(request, item_id):
+
+    item = get_object_or_404(
+        OrderItem,
+        id=item_id,
+        order__user=request.user
+    )
+
+    file_path = item.product.download_file.path
+
+    if not os.path.exists(file_path):
+        raise Http404("File not found")
+
+    item.downloaded = True
+    item.save()
+
+    return FileResponse(
+        open(file_path, "rb"),
+        as_attachment=True,
+        filename=os.path.basename(file_path)
     )

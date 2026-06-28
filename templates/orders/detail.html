@@ -18,13 +18,26 @@
 
         {% for item in order.items.all %}
 
-            <li class="list-group-item d-flex justify-content-between">
+            {% for item in order.items.all %}
 
-                {{ item.product.title }}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
 
-                <span>${{ item.price }}</span>
+        {{ item.product.title }}
 
-            </li>
+        <div>
+            <span class="me-3">${{ item.price }}</span>
+
+            <a href="{% url 'orders:download' item.id %}"
+               class="btn btn-sm btn-success">
+
+                Download
+
+            </a>
+        </div>
+
+    </li>
+
+{% endfor %}
 
         {% endfor %}
 

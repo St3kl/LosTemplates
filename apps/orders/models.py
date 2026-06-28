@@ -62,6 +62,10 @@ class OrderItem(models.Model):
         decimal_places=2
     )
 
+    downloaded = models.BooleanField(
+        default=False
+    )
+
     def __str__(self):
         return f"{self.product.title} ({self.order.id})"
 # Create your models here.

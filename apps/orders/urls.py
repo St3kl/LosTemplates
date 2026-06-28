@@ -14,5 +14,10 @@ urlpatterns = [
         name="purchase_product"
     ),
     path("", views.order_list, name="list"),
+    path(
+    "download/<int:item_id>/",
+    views.download_product,
+    name="download"
+),
     
 ]
