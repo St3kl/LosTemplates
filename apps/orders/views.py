@@ -72,46 +72,30 @@ def purchase_product(request, slug):
 @login_required
 def checkout(request):
 
-    cart = request.session.get("cart", [])
+    order = (
+        Order.objects
+        .filter(
+            user=request.user,
+            status="pending"
+        )
+        .prefetch_related("items")
+        .first()
+    )
 
-    if not cart:
+    if order is None or not order.items.exists():
         messages.warning(request, "Your cart is empty.")
         return redirect("cart:cart")
 
-    products = []
-    total = 0
-
-    for product_id in cart:
-        product = get_object_or_404(Product, id=product_id)
-        products.append(product)
-        total += product.price
-
-    # Create order
-    order = Order.objects.create(
-        user=request.user,
-        status="pending",
-        total_price=0
-    )
-
-    # Create items
-    for product in products:
-        OrderItem.objects.create(
-            order=order,
-            product=product,
-            price=product.price
-        )
-
-    # Update total
-    order.total_price = total
+    # Simulate successful payment for now
+    order.status = "paid"
     order.save()
 
-    # Clear cart
-    request.session["cart"] = []
-
-    messages.success(request, "Order created successfully!")
+    messages.success(
+        request,
+        "Purchase completed successfully!"
+    )
 
     return redirect("orders:success")
-
 
 # -------------------------
 # SUCCESS PAGE

@@ -1,29 +1,26 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-
+from django.contrib.auth.decorators import login_required
 from apps.products.models import Product
 from django.contrib import messages
+from apps.orders.models import Order, OrderItem
 
 
+@login_required
 def cart_view(request):
 
-    cart = request.session.get("cart", [])
-
-    products = []
-
-    total = 0
-
-    for product_id in cart:
-
-        product = get_object_or_404(Product, id=product_id)
-
-        products.append(product)
-
-        total += product.price
+    order = (
+        Order.objects
+        .filter(
+            user=request.user,
+            status="pending"
+        )
+        .prefetch_related("items__product")
+        .first()
+    )
 
     context = {
-        "products": products,
-        "total": total,
+        "order": order,
     }
 
     return render(
@@ -34,52 +31,88 @@ def cart_view(request):
 
 
 @require_POST
+@login_required
 def add_to_cart(request, product_id):
 
     product = get_object_or_404(Product, id=product_id)
 
-    cart = request.session.get("cart", [])
+    # Get the user's active cart
+    order = (
+        Order.objects
+        .filter(
+            user=request.user,
+            status="pending"
+        )
+        .first()
+    )
 
-    product_id = str(product.id)
+    # Create a cart if none exists
+    if order is None:
+        order = Order.objects.create(
+            user=request.user,
+            status="pending",
+            total_price=0
+        )
 
-    if product_id in cart:
+    # Prevent duplicate products
+    item, created = OrderItem.objects.get_or_create(
+        order=order,
+        product=product,
+        defaults={
+            "price": product.price
+        }
+    )
 
+    if created:
+        messages.success(
+            request,
+            f'"{product.title}" added to your cart.'
+        )
+    else:
         messages.warning(
             request,
             f'"{product.title}" is already in your cart.'
         )
 
-    else:
-
-        cart.append(product_id)
-
-        request.session["cart"] = cart
-
-        messages.success(
-            request,
-            f'"{product.title}" added to your cart.'
-        )
+    # Recalculate total
+    order.total_price = sum(
+        item.price
+        for item in order.items.all()
+    )
+    order.save()
 
     return redirect("cart:cart")
 
-@require_POST
+@login_required
 def remove_from_cart(request, product_id):
 
-    cart = request.session.get("cart", [])
-
-    product = get_object_or_404(Product, id=product_id)
-
-    product_id = str(product.id)
-
-    if product_id in cart:
-
-        cart.remove(product_id)
-
-        request.session["cart"] = cart
-
-        messages.success(
-            request,
-            f'"{product.title}" removed from your cart.'
+    order = (
+        Order.objects
+        .filter(
+            user=request.user,
+            status="pending"
         )
+        .first()
+    )
+
+    if order:
+
+        OrderItem.objects.filter(
+            order=order,
+            product_id=product_id
+        ).delete()
+
+        # Recalculate total
+        total = sum(
+            item.price
+            for item in order.items.all()
+        )
+
+        order.total_price = total
+        order.save()
+
+        # Optional: delete empty cart
+        if not order.items.exists():
+            order.delete()
 
     return redirect("cart:cart")
