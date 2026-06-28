@@ -55,8 +55,8 @@ def dashboard(request):
 
     orders = (
         Order.objects
-        .filter(user=request.user, paid=True)
-        .select_related("product")
+        .filter(user=request.user, status="paid")
+        .prefetch_related("items__product")
         .order_by("-created_at")
     )
 

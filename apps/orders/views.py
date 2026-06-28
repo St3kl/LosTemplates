@@ -87,3 +87,16 @@ def order_detail(request, order_id):
         "orders/detail.html",
         {"order": order}
     )
+    
+@login_required
+def order_list(request):
+
+    orders = Order.objects.filter(
+        user=request.user
+    ).order_by("-created_at")
+
+    return render(
+        request,
+        "orders/list.html",
+        {"orders": orders}
+    )
