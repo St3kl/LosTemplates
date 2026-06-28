@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from apps.products.models import Product
+from django.contrib import messages
 
 
 def cart_view(request):
@@ -36,12 +37,22 @@ def add_to_cart(request, product_id):
 
     cart = request.session.get("cart", {})
 
-    product_id = str(product_id)
+    product = get_object_or_404(Product, id=product_id)
+
+    product_id = str(product.id)
 
     if product_id in cart:
         cart[product_id] += 1
+        messages.success(
+            request,
+            f'"{product.title}" quantity updated in your cart.'
+        )
     else:
         cart[product_id] = 1
+        messages.success(
+            request,
+            f'"{product.title}" added to your cart.'
+        )
 
     request.session["cart"] = cart
 
