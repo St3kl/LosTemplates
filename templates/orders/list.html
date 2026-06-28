@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h2>My Orders</h2>
+
+    <hr>
+
+    {% if orders %}
+
+        <div class="list-group">
+
+            {% for order in orders %}
+
+                <a href="{% url 'orders:detail' order.id %}"
+                   class="list-group-item list-group-item-action">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+                            <strong>Order #{{ order.id }}</strong>
+                            <br>
+                            <small class="text-muted">
+                                {{ order.created_at }}
+                            </small>
+                        </div>
+
+                        <div>
+                            <span class="badge bg-primary">
+                                {{ order.status }}
+                            </span>
+
+                            <span class="ms-2 fw-bold">
+                                ${{ order.total_price }}
+                            </span>
+                        </div>
+
+                    </div>
+
+                </a>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <p class="text-muted">You have no orders yet.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

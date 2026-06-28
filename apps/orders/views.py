@@ -4,6 +4,7 @@ from django.contrib import messages
 
 from apps.products.models import Product
 from .models import Order, OrderItem
+from .models import Order
 
 
 @login_required
@@ -68,3 +69,21 @@ def checkout(request):
 
 def order_success(request):
     return render(request, "orders/success.html")
+
+
+
+
+@login_required
+def order_detail(request, order_id):
+
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user
+    )
+
+    return render(
+        request,
+        "orders/detail.html",
+        {"order": order}
+    )

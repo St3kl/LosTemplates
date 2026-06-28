@@ -51,13 +51,14 @@
 
             <div class="mt-4 d-flex gap-2">
 
-                <a href="{% url 'purchase_product' product.slug %}"
+                <a href="{% url 'orders:purchase_product' product.slug %}"
    class="btn btn-primary btn-lg">
 
     Buy / Unlock
 
 </a>
 <form action="{% url 'cart:add' product.id %}" method="post">
+
 
     {% csrf_token %}
 
