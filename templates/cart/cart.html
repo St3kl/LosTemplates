@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}
+Shopping Cart
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h1>Shopping Cart</h1>
+
+    <hr>
+
+    {% if products %}
+
+        <table class="table">
+
+            <thead>
+
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for item in products %}
+
+                <tr>
+
+                    <td>{{ item.product.title }}</td>
+
+                    <td>${{ item.product.price }}</td>
+
+                    <td>{{ item.quantity }}</td>
+
+                    <td>${{ item.subtotal }}</td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        <h3>Total: ${{ total }}</h3>
+
+    {% else %}
+
+        <p>Your cart is empty.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

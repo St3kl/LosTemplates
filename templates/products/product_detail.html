@@ -57,6 +57,21 @@
     Buy / Unlock
 
 </a>
+<form action="{% url 'cart:add' product.id %}" method="post">
+
+    {% csrf_token %}
+
+    <button type="submit" class="btn btn-success d-flex align-items-center">
+
+        Add to Cart
+
+    </button>
+
+</form>
+{% comment %} <a href="{% url 'cart:add' product.id %}"
+   class="btn btn-success d-flex align-items-center">
+    Add to Cart
+</a> {% endcomment %}
 
                 <button class="btn btn-outline-secondary btn-lg">
 
