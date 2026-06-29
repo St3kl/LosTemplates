@@ -8,6 +8,13 @@ from apps.products.models import Product
 from .models import Order, OrderItem
 from .services import user_can_access_item
 
+def get_or_create_cart(user):
+    order, _ = Order.objects.get_or_create(
+        user=user,
+        status="pending",
+        defaults={"total_price": 0}
+    )
+    return order
 
 # -------------------------
 # SINGLE PRODUCT PURCHASE
@@ -15,55 +22,23 @@ from .services import user_can_access_item
 @login_required
 def purchase_product(request, slug):
 
-    product = get_object_or_404(
-        Product,
-        slug=slug,
-        active=True
-    )
+    product = get_object_or_404(Product, slug=slug, active=True)
 
-    # Get the user's active cart
-    order = (
-        Order.objects
-        .filter(
-            user=request.user,
-            status="pending"
-        )
-        .order_by("-created_at")
-        .first()
-    )
+    order = get_or_create_cart(request.user)
 
-    # Create one if it doesn't exist
-    if order is None:
-        order = Order.objects.create(
-            user=request.user,
-            status="pending",
-            total_price=0
-        )
-
-    # Prevent duplicate products
     OrderItem.objects.get_or_create(
         order=order,
         product=product,
-        defaults={
-            "price": product.price
-        }
+        defaults={"price": product.price}
     )
 
-    # Update cart total
-    total = sum(
-        item.price
-        for item in order.items.all()
+    # recalc total
+    order.total_price = sum(
+        item.price for item in order.items.all()
     )
-
-    order.total_price = total
     order.save()
 
-    messages.success(
-        request,
-        f"{product.title} added to your cart."
-    )
-
-    return redirect("cart:cart")
+    return redirect("product_detail", slug=slug)
 
 
 # -------------------------
@@ -74,26 +49,20 @@ def checkout(request):
 
     order = (
         Order.objects
-        .filter(
-            user=request.user,
-            status="pending"
-        )
+        .filter(user=request.user, status="pending")
         .prefetch_related("items")
         .first()
     )
 
-    if order is None or not order.items.exists():
+    if not order or not order.items.exists():
         messages.warning(request, "Your cart is empty.")
         return redirect("cart:cart")
 
-    # Simulate successful payment for now
+    # convert cart → paid order
     order.status = "paid"
     order.save()
 
-    messages.success(
-        request,
-        "Purchase completed successfully!"
-    )
+    messages.success(request, "Order completed successfully!")
 
     return redirect("orders:success")
 

@@ -63,13 +63,17 @@
 
                         </p>
 
-                        <a
-                           href="{% url 'product_download' order.product.slug %}"
-                           class="btn btn-primary">
+                       {% if item.product and item.product.slug %}
 
-                            Download
+    <a href="{% url 'product_download' item.product.slug %}">
+        Download
+    </a>
 
-                        </a>
+{% else %}
+
+    <span class="text-muted">Unavailable</span>
+
+{% endif %}
 
                     </div>
 

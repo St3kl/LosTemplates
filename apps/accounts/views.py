@@ -5,6 +5,10 @@ from django.contrib.auth.decorators import login_required
 from apps.orders.models import Order
 from apps.orders.models import OrderItem
 
+from apps.orders.models import OrderItem
+
+OrderItem.objects.filter(product__isnull=True)
+
 
 def login_view(request):
 
@@ -77,14 +81,19 @@ def dashboard(request):
 @login_required
 def downloads_view(request):
 
-    items = OrderItem.objects.filter(
-        order__user=request.user,
-        order__status="paid"
-    ).select_related("product", "order")
+    items = (
+        OrderItem.objects
+        .filter(
+            order__user=request.user,
+            order__status="paid",
+            product__isnull=False
+        )
+        .select_related("product", "order")
+    )
 
     return render(
         request,
         "accounts/downloads.html",
         {"items": items}
-    )   
+    ) 
 # Create your views here.
