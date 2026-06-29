@@ -113,20 +113,27 @@ def order_list(request):
 # SECURE DOWNLOAD SYSTEM
 # -------------------------
 @login_required
-def download_product(request, item_id):
+def download_product(request, slug):
 
-    # Security check (ownership + paid access)
-    if not user_can_access_item(request.user, item_id):
+    item = (
+        OrderItem.objects
+        .filter(
+            order__user=request.user,
+            order__status="paid",
+            product__slug=slug
+        )
+        .select_related("product")
+        .first()
+    )
+
+    if not item:
         raise Http404("You do not have access to this file.")
-
-    item = get_object_or_404(OrderItem, id=item_id)
 
     file_path = item.product.download_file.path
 
     if not os.path.exists(file_path):
         raise Http404("File not found")
 
-    # Mark as downloaded
     item.downloaded = True
     item.save()
 
