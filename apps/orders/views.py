@@ -9,11 +9,13 @@ from .models import Order, OrderItem
 from .services import user_can_access_item
 
 def get_or_create_cart(user):
-    order, _ = Order.objects.get_or_create(
+
+    order, created = Order.objects.get_or_create(
         user=user,
         status="pending",
         defaults={"total_price": 0}
     )
+
     return order
 
 # -------------------------
@@ -26,20 +28,19 @@ def purchase_product(request, slug):
 
     order = get_or_create_cart(request.user)
 
-    OrderItem.objects.get_or_create(
+    item, created = OrderItem.objects.get_or_create(
         order=order,
         product=product,
         defaults={"price": product.price}
     )
 
-    # recalc total
+    # always recalc total (prevents drift bugs)
     order.total_price = sum(
-        item.price for item in order.items.all()
+        i.price for i in order.items.all()
     )
     order.save()
 
     return redirect("product_detail", slug=slug)
-
 
 # -------------------------
 # CART CHECKOUT
@@ -112,22 +113,12 @@ def order_list(request):
 # -------------------------
 # SECURE DOWNLOAD SYSTEM
 # -------------------------
+
+
 @login_required
-def download_product(request, slug):
+def download_product(request, item_id):
 
-    item = (
-        OrderItem.objects
-        .filter(
-            order__user=request.user,
-            order__status="paid",
-            product__slug=slug
-        )
-        .select_related("product")
-        .first()
-    )
-
-    if not item:
-        raise Http404("You do not have access to this file.")
+    item = get_object_or_404(OrderItem, id=item_id)
 
     file_path = item.product.download_file.path
 

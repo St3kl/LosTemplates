@@ -5,9 +5,7 @@
 <div class="container py-5">
 
     <h1 class="mb-4">
-
         Welcome, {{ request.user.username }}
-
     </h1>
 
     <div class="row mb-5">
@@ -19,7 +17,6 @@
                 <div class="card-body">
 
                     <h5>Total Purchases</h5>
-
                     <h2>{{ total_orders }}</h2>
 
                 </div>
@@ -31,65 +28,73 @@
     </div>
 
     <h3 class="mb-4">
-
         My Downloads
-
     </h3>
 
     <div class="row">
 
-        {% for order in orders %}
+        {% if orders %}
 
-            <div class="col-md-4 mb-4">
+            {% for order in orders %}
 
-                <div class="card h-100">
+                {% for item in order.items.all %}
 
-                    <img
-                        src="{{ order.product.thumbnail.url }}"
-                        class="card-img-top"
-                        alt="{{ order.product.title }}">
+                    <div class="col-md-4 mb-4">
 
-                    <div class="card-body">
+                        <div class="card h-100">
 
-                        <h5>
+                            {% if item.product %}
 
-                            {{ order.product.title }}
+                                <img
+                                    src="{{ item.product.thumbnail.url }}"
+                                    class="card-img-top"
+                                    alt="{{ item.product.title }}">
 
-                        </h5>
+                                <div class="card-body">
 
-                        <p class="text-muted">
+                                    <h5>
+                                        {{ item.product.title }}
+                                    </h5>
 
-                            {{ order.product.short_description }}
+                                    <p class="text-muted">
+                                        {{ item.product.short_description }}
+                                    </p>
 
-                        </p>
+                                    {% if item.product.slug %}
 
-                       {% if item.product and item.product.slug %}
+                                        <a href="{% url 'orders:download' item.id %}">
+                                            Download
+                                        </a>
 
-    <a href="{% url 'product_download' item.product.slug %}">
-        Download
-    </a>
+                                    {% else %}
 
-{% else %}
+                                        <span class="text-muted">Unavailable</span>
 
-    <span class="text-muted">Unavailable</span>
+                                    {% endif %}
 
-{% endif %}
+                                </div>
+
+                            {% else %}
+
+                                <div class="card-body">
+                                    <span class="text-danger">Product missing</span>
+                                </div>
+
+                            {% endif %}
+
+                        </div>
 
                     </div>
 
-                </div>
+                {% endfor %}
 
-            </div>
+            {% empty %}
 
-        {% empty %}
+                <p>You haven't purchased any templates yet.</p>
 
-            <p>
+            {% endfor %}
 
-                You haven't purchased any templates yet.
-
-            </p>
-
-        {% endfor %}
+        {% endif %}
 
     </div>
 

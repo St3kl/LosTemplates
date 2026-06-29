@@ -18,26 +18,56 @@
 
         {% for item in order.items.all %}
 
-            {% for item in order.items.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
 
-    <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
 
-        {{ item.product.title }}
+                    {% if item.product %}
 
-        <div>
-            <span class="me-3">${{ item.price }}</span>
+                        {{ item.product.title }}
 
-            <a href="{% url 'orders:download' item.id %}"
-               class="btn btn-sm btn-success">
+                    {% else %}
 
-                Download
+                        <span class="text-danger">
+                            Product unavailable
+                        </span>
 
-            </a>
-        </div>
+                    {% endif %}
 
-    </li>
+                </div>
 
-{% endfor %}
+                <div class="d-flex align-items-center">
+
+                    <span class="me-3">
+                        ${{ item.price }}
+                    </span>
+
+                    {% if item.product %}
+
+                        <a href="{% url 'orders:download' item.id %}"
+                           class="btn btn-sm btn-success">
+
+                            Download
+
+                        </a>
+
+                    {% else %}
+
+                        <button class="btn btn-sm btn-secondary" disabled>
+                            Unavailable
+                        </button>
+
+                    {% endif %}
+
+                </div>
+
+            </li>
+
+        {% empty %}
+
+            <li class="list-group-item text-muted">
+                No items in this order
+            </li>
 
         {% endfor %}
 

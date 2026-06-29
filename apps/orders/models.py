@@ -9,6 +9,7 @@ class Order(models.Model):
         ("pending", "Pending"),
         ("paid", "Paid"),
         ("failed", "Failed"),
+        ("cancelled", "Cancelled"),
     ]
 
     user = models.ForeignKey(
