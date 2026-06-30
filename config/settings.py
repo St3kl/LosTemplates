@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "apps.downloads",
     "apps.core",
     
-   
+    
 ]
 
 MIDDLEWARE = [
@@ -110,6 +110,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+
+# ==============================
+# PAYSTACK CONFIGURATION
+# ==============================
+
+PAYSTACK_SECRET_KEY = "your_secret_key"
+PAYSTACK_PUBLIC_KEY = "your_public_key"
+
+PAYSTACK_CALLBACK_URL = "http://127.0.0.1:8000/payments/webhook/"
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
