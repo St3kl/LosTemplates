@@ -1,80 +1,106 @@
+##Table of Contents
+
+1. Project Title
+2. Project Description
+3. Features
+4. Screenshots
+5. Tech Stack
+6. Project Architecture
+7. Installation
+8. Configuration
+9. Running the Project
+10. Folder Structure
+11. Database
+12. User Roles
+13. Current Progress
+14. Roadmap
+15. Documentation
+16. Contributing
+17. License
+18. Author
+
+
 # LosTemplates
 
-**Version:** 0.8.0
-
-**Status:** Active Development
-
-**Project Type:** Single-Vendor Digital Marketplace
+> **A modern digital marketplace for premium web templates, UI kits, source code, and developer resources.**
 
 ---
 
-# Overview
+## 📖 Overview
 
-LosTemplates is a modern web application that allows users to browse, purchase, and download premium digital templates.
+LosTemplates is a full-stack Django application designed to sell digital products securely. It provides customers with a seamless experience for browsing products, managing a shopping cart, purchasing digital assets, and downloading them after payment.
 
-Unlike marketplaces that support multiple sellers, LosTemplates is intentionally designed as a **single-vendor platform**, where all products are created, managed, and sold by the platform owner.
+Unlike traditional e-commerce platforms that manage physical inventory, LosTemplates focuses entirely on digital products with secure delivery and user account management.
 
-The goal of the project is to provide a secure, scalable, and maintainable marketplace for downloadable digital assets while serving as a long-term software engineering learning project.
-
----
-
-# Vision
-
-Build a professional marketplace capable of selling:
-
-* Website Templates
-* Landing Pages
-* Dashboard Templates
-* Mobile App Templates
-* Desktop Application Templates
-* Automation Templates
-* Microsoft Excel Templates
-* Microsoft PowerPoint Templates
-* Microsoft Word Templates
-* PDF Templates
-* UI Kits
-* Design Assets
-* Source Code Packages
-* Documentation Templates
-* Digital Resources
-
-Every downloadable product includes its original source files whenever applicable.
+The project is also a learning and engineering initiative, built using professional software development practices, including modular architecture, version control, documentation, and phased development.
 
 ---
 
-# Project Goals
+# ✨ Features
 
-* Build a production-quality Django application.
-* Follow professional software engineering practices.
-* Learn modern backend architecture.
-* Build maintainable, modular code.
-* Produce comprehensive technical documentation.
-* Prepare the project for future scaling.
+## Customer Features
+
+* User registration and authentication
+* Secure login and logout
+* Product catalog
+* Product detail pages
+* Product categories
+* Shopping cart
+* Order management
+* User dashboard
+* Secure digital downloads
+* Download history
+* Responsive design
 
 ---
 
-# Technology Stack
+## Administration
+
+* Product management
+* Category management
+* Order management
+* Customer management
+* Media management
+
+---
+
+## Planned Features
+
+* Paystack payment integration
+* Email receipts
+* Coupons and discounts
+* Product reviews
+* Wishlist
+* Search and filtering
+* Vendor marketplace
+* Analytics dashboard
+* REST API
+* Mobile application
+
+---
+
+# 🛠 Tech Stack
 
 ## Backend
 
 * Python
 * Django
 
-## Database
-
-* PostgreSQL (planned)
-* SQLite (development)
-
 ## Frontend
 
 * HTML5
 * CSS3
-* Bootstrap 5
+* Bootstrap
 * JavaScript
 
-## File Storage
+## Database
 
-* Django Media Storage
+* SQLite (Development)
+* PostgreSQL (Production)
+
+## Media Storage
+
+* Django Media Files
 
 ## Version Control
 
@@ -83,188 +109,195 @@ Every downloadable product includes its original source files whenever applicabl
 
 ---
 
-# Current Features
-
-* User Registration
-* User Login
-* User Logout
-* Product Categories
-* Product Catalog
-* Product Detail Pages
-* Product Gallery
-* Featured Products
-* Protected Downloads
-* Purchase Records (Mock)
-* User Dashboard
-* Django Administration Panel
-
----
-
-# Planned Features
-
-* Shopping Cart
-* Wishlist
-* Stripe Payments
-* Email Notifications
-* Product Reviews
-* Product Ratings
-* Search Engine
-* Advanced Filtering
-* Coupons
-* License Management
-* Analytics Dashboard
-* REST API
-* React Frontend (Optional)
-* Docker Deployment
-
----
-
-# Project Structure
+# 📂 Project Structure
 
 ```text
 LosTemplates/
-
-apps/
-config/
-templates/
-static/
-media/
-docs/
-
-manage.py
-README.md
-requirements.txt
+│
+├── apps/
+│   ├── accounts/
+│   ├── cart/
+│   ├── orders/
+│   ├── products/
+│   └── core/
+│
+├── config/
+├── templates/
+├── static/
+├── media/
+├── docs/
+├── manage.py
+└── requirements.txt
 ```
 
 ---
 
-# Documentation
+# 🚀 Installation
 
-Complete documentation is available inside the **docs/** directory.
-
-Examples include:
-
-* Architecture
-* Database
-* API
-* Security
-* Roadmap
-* Design System
-* Coding Standards
-* Deployment
-* AI Context
-
----
-
-# Installation
-
-Clone the repository.
+Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/yourusername/LosTemplates.git
 ```
 
-Create a virtual environment.
+Enter the project directory:
+
+```bash
+cd LosTemplates
+```
+
+Create a virtual environment:
 
 ```bash
 python -m venv venv
 ```
 
-Activate it.
+Activate the virtual environment:
 
-Windows
+### Windows
 
 ```bash
 venv\Scripts\activate
 ```
 
-Install dependencies.
+### Linux / macOS
+
+```bash
+source venv/bin/activate
+```
+
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Apply migrations.
+Run migrations:
 
 ```bash
 python manage.py migrate
 ```
 
-Run the development server.
+Create an administrator account:
+
+```bash
+python manage.py createsuperuser
+```
+
+Start the development server:
 
 ```bash
 python manage.py runserver
 ```
 
-Open:
+Open your browser:
 
-```
+```text
 http://127.0.0.1:8000/
 ```
 
 ---
 
-# Development Principles
+# 📁 Main Applications
 
-The project follows these principles:
-
-* Modular Architecture
-* Separation of Concerns
-* Reusable Components
-* Documentation First
-* Security by Default
-* Scalability
-* Clean Code
-* Git Versioning
+| Application | Purpose                            |
+| ----------- | ---------------------------------- |
+| accounts    | Authentication and user dashboard  |
+| products    | Product catalog and categories     |
+| cart        | Shopping cart management           |
+| orders      | Checkout, purchases, and downloads |
+| core        | Shared pages and utilities         |
 
 ---
 
-# Development Roadmap
+# 📊 Current Development Status
 
-The project is divided into structured phases.
+Current implementation includes:
 
-Examples:
+* User authentication
+* Product catalog
+* Shopping cart
+* Order creation
+* User dashboard
+* Secure download system
+* Order history
 
-* Environment Setup
+The next milestone is integrating Paystack to support online payments for customers.
+
+---
+
+# 📚 Documentation
+
+Project documentation is located in the `/docs` directory.
+
+Topics include:
+
+* Project Overview
+* System Architecture
+* Database Design
 * Authentication
-* Product Management
-* Marketplace Features
-* Documentation
-* Architecture Improvements
+* Products
 * Shopping Cart
-* Payments
+* Orders
+* Payment Integration
+* Downloads
+* Security
 * Deployment
 
-See:
+---
 
-```
-docs/00_Project/ROADMAP.md
-```
+# 🛣 Roadmap
+
+### Phase 1
+
+* Authentication
+* Products
+* Shopping cart
+
+### Phase 2
+
+* Orders
+* Downloads
+* User dashboard
+
+### Phase 3
+
+* Paystack integration
+* Email notifications
+* Invoices
+
+### Phase 4
+
+* Marketplace features
+* Vendor accounts
+* Reviews
+* Analytics
 
 ---
 
-# Contributing
+# 🤝 Contributing
 
-Currently, LosTemplates is maintained as a single-developer project.
+Contributions are welcome.
 
-Future collaboration guidelines will be documented as the project evolves.
+Before submitting changes:
 
----
-
-# License
-
-License information will be added before the first production release.
-
----
-
-# Author
-
-Luis Mackus
+* Follow the project's coding standards.
+* Write clear commit messages.
+* Test your changes locally.
+* Update documentation when adding or modifying features.
 
 ---
 
-# Acknowledgements
+# 📄 License
 
-LosTemplates is both a commercial product and a software engineering learning journey.
+This project is licensed under the MIT License.
 
-The project emphasizes long-term maintainability, clean architecture, and continuous documentation to simulate professional software development practices.
+---
+
+# 👨‍💻 Author
+
+**Luis Mackus**
+
+Founder of **LosTemplates**
+
+Building scalable web applications, digital marketplaces, and educational software while continuously expanding expertise in web engineering, cybersecurity, and artificial intelligence.
