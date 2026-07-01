@@ -65,7 +65,11 @@ def checkout(request):
 
     messages.success(request, "Order completed successfully!")
 
-    return redirect("orders:success")
+    # return redirect("orders:success")
+    return redirect(
+    "payments:start",
+    order_id=order.id
+    )
 
 # -------------------------
 # SUCCESS PAGE
