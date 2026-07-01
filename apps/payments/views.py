@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from apps.orders.models import Order
 from .models import Payment
@@ -24,24 +26,28 @@ def start_payment(request, order_id):
         callback_url,
     )
 
-    if response["status"]:
+    if response.get("status"):
 
         reference = response["data"]["reference"]
 
-        Payment.objects.create(
-            user=request.user,
+        payment, created = Payment.objects.update_or_create(
             order=order,
-            reference=reference,
-            amount=order.total_price,
+            defaults={
+                "user": request.user,
+                "reference": reference,
+                "amount": order.total_price,
+                "status": "pending",
+            },
         )
 
         return redirect(
             response["data"]["authorization_url"]
         )
 
-    return redirect("orders:checkout")
-
-from django.http import HttpResponse
+    return HttpResponse(
+        "Unable to initialize payment.",
+        status=400,
+    )
 
 
 def payment_callback(request):
@@ -49,20 +55,22 @@ def payment_callback(request):
     reference = request.GET.get("reference")
 
     if not reference:
-        return HttpResponse("Missing reference.", status=400)
+        return HttpResponse(
+            "Missing payment reference.",
+            status=400,
+        )
 
     response = PaystackService.verify_payment(reference)
 
-    if response["status"]:
+    if response.get("status"):
 
-        payment = Payment.objects.get(
-            reference=reference
+        payment = get_object_or_404(
+            Payment,
+            reference=reference,
         )
 
         payment.status = "success"
-        payment.transaction_id = str(
-            response["data"]["id"]
-        )
+        payment.transaction_id = str(response["data"]["id"])
         payment.gateway_response = response
         payment.save()
 
@@ -75,3 +83,12 @@ def payment_callback(request):
         "Payment verification failed.",
         status=400,
     )
+
+
+@csrf_exempt
+def paystack_webhook(request):
+    """
+    Placeholder webhook.
+    We'll implement full webhook verification next.
+    """
+    return HttpResponse(status=200)
