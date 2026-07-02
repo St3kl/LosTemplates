@@ -1,3 +1,28 @@
+from django.conf import settings
 from django.db import models
 
-# Create your models here.
+from apps.products.models import Product
+
+
+class UserProductAccess(models.Model):
+    """
+    Records permanent ownership of purchased products.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+    )
+
+    granted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "product")
+
+    def __str__(self):
+        return f"{self.user} owns {self.product}"
