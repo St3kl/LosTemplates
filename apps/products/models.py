@@ -54,8 +54,10 @@ class Product(models.Model):
     )
 
     download_file = models.FileField(
-        upload_to="products/"
-    )
+    upload_to="products/files/",
+    null=True,
+    blank=True
+)
 
     file_size_mb = models.DecimalField(
         max_digits=8,
@@ -84,6 +86,21 @@ class Product(models.Model):
     updated_at = models.DateTimeField(
         auto_now=True
     )
+    
+    file_source = models.CharField(
+    max_length=20,
+    choices=[
+        ("local", "Local File"),
+        ("external", "External Link"),
+    ],
+    default="local"
+)
+    external_url = models.URLField(
+    null=True,
+    blank=True
+)
+    
+    
 
     def __str__(self):
         return self.title
