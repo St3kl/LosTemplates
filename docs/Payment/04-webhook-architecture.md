@@ -157,3 +157,81 @@ The webhook endpoint must:
 ---
 
 This document defines the foundation of the payment processing architecture for LosTemplates. All future payment gateways should follow the same layered design to maintain consistency, security, and maintainability.
+
+
+
+# Idempotency & Payment Safety Layer
+
+## Overview
+
+To ensure production-grade reliability, the Paystack webhook system implements idempotency protection. This prevents duplicate processing of the same transaction reference, which can occur due to Paystack retrying webhook events.
+
+---
+
+## Problem Addressed
+
+Paystack may send the same webhook event multiple times:
+
+* Network retries
+* Timeout retries
+* Event re-delivery
+
+Without protection, this can lead to:
+
+* Duplicate payment confirmation
+* Multiple order updates
+* Inconsistent transaction state
+* Security vulnerabilities in download access
+
+---
+
+## Solution: Idempotency Guard
+
+The system ensures that each payment reference is processed only once.
+
+### Implementation Strategy
+
+1. Fetch payment using unique reference.
+2. Check current payment status.
+3. If status is already "success", ignore the request.
+4. Use database locking (`select_for_update`) to prevent race conditions.
+5. Ensure order status is updated only once.
+
+---
+
+## Safety Rules
+
+* A payment reference must never be processed more than once.
+* Webhook retries must be safe and ignored if already processed.
+* Order updates must be conditional (only if not already paid).
+
+---
+
+## Updated Processing Flow
+
+```text
+Webhook Received
+      ↓
+Signature Verified
+      ↓
+Event Routed
+      ↓
+Idempotency Check
+      ↓
+Payment Updated (if new)
+      ↓
+Order Marked Paid (if needed)
+      ↓
+Access Granted
+```
+
+---
+
+## Result
+
+This ensures:
+
+* ✔ Safe retry handling
+* ✔ No duplicate payments
+* ✔ Stable order state
+* ✔ Production-ready reliability
