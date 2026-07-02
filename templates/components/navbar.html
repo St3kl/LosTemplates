@@ -2,7 +2,7 @@
 
     <div class="container">
 
-        <a class="navbar-brand fw-bold" href="/">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}">
 
             LosTemplates
 
@@ -25,7 +25,7 @@
 
                 <li class="nav-item">
 
-                    <a class="nav-link" href="/">
+                    <a class="nav-link" href="{% url 'home' %}">
 
                         Home
 
@@ -36,7 +36,7 @@
                 <li class="nav-item">
 
                     <a class="nav-link"
-                       href="/products/">
+                       href="{% url 'products:product_list' %}">
 
                         Templates
 
@@ -57,14 +57,14 @@
 
             {% if user.is_authenticated %}
 
-<a href="{% url 'dashboard' %}"
+<a href="{% url 'accounts:dashboard' %}"
 class="btn btn-outline-primary me-2">
 
 Dashboard
 
 </a>
 
-<a href="{% url 'logout' %}"
+<a href="{% url 'accounts:logout' %}"
 class="btn btn-danger">
 
 Logout
@@ -73,14 +73,14 @@ Logout
 
 {% else %}
 
-<a href="{% url 'login' %}"
+<a href="{% url 'accounts:login' %}"
 class="btn btn-outline-primary me-2">
 
 Login
 
 </a>
 
-<a href="{% url 'register' %}"
+<a href="{% url 'accounts:register' %}"
    class="btn btn-primary">
 
 Register

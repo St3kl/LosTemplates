@@ -85,10 +85,46 @@ def payment_callback(request):
     )
 
 
+import hashlib
+import hmac
+import json
+
+from django.conf import settings
+from django.http import HttpResponse
+
+
 @csrf_exempt
 def paystack_webhook(request):
-    """
-    Placeholder webhook.
-    We'll implement full webhook verification next.
-    """
+
+    signature = request.headers.get("x-paystack-signature")
+
+    computed_signature = hmac.new(
+        settings.PAYSTACK_SECRET_KEY.encode(),
+        request.body,
+        hashlib.sha512,
+    ).hexdigest()
+
+    if signature != computed_signature:
+        return HttpResponse(status=403)
+
+    payload = json.loads(request.body)
+
+    if payload["event"] == "charge.success":
+
+        reference = payload["data"]["reference"]
+
+        payment = Payment.objects.filter(
+            reference=reference
+        ).first()
+
+        if payment and payment.status != "success":
+
+            payment.status = "success"
+            payment.transaction_id = str(payload["data"]["id"])
+            payment.gateway_response = payload
+            payment.save()
+
+            payment.order.status = "paid"
+            payment.order.save()
+
     return HttpResponse(status=200)
