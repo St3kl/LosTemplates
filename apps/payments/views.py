@@ -99,35 +99,17 @@ from django.http import HttpResponse
 @csrf_exempt
 def paystack_webhook(request):
 
-    signature = request.headers.get("x-paystack-signature")
+    if request.method != "POST":
+        return HttpResponse(status=405)
 
-    computed_signature = hmac.new(
-        settings.PAYSTACK_SECRET_KEY.encode(),
-        request.body,
-        hashlib.sha512,
-    ).hexdigest()
-
-    if signature != computed_signature:
+    # 1. Verify signature FIRST
+    if not verify_paystack_signature(request):
         return HttpResponse(status=403)
 
-    payload = json.loads(request.body)
+    # 2. Parse payload
+    payload = json.loads(request.body.decode("utf-8"))
 
-    if payload["event"] == "charge.success":
-
-        reference = payload["data"]["reference"]
-
-        payment = Payment.objects.filter(
-            reference=reference
-        ).first()
-
-        if payment and payment.status != "success":
-
-            payment.status = "success"
-            payment.transaction_id = str(payload["data"]["id"])
-            payment.gateway_response = payload
-            payment.save()
-
-            payment.order.status = "paid"
-            payment.order.save()
+    # 3. Process event
+    process_webhook(payload)
 
     return HttpResponse(status=200)
