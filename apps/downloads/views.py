@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect
 
 from apps.products.models import Product
 from .services import DownloadService
-
+from .models import DownloadLog
 
 @login_required
 def secure_download(request, product_id):

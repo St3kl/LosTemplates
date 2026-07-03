@@ -94,7 +94,7 @@ import json
 
 from django.conf import settings
 from django.http import HttpResponse
-
+from .webhooks import process_webhook
 
 @csrf_exempt
 def paystack_webhook(request):
