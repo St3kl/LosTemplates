@@ -1,21 +1,5 @@
-import json
-
-
-def process_webhook(payload):
-    """
-    Handles Paystack webhook events.
-    """
-
-    event = payload.get("event")
-
-    if event == "charge.success":
-        return handle_success(payload)
-
-    return {"status": "ignored"}
-
-
 from apps.payments.models import Payment
-from apps.orders.models import Order
+from apps.downloads.services import DownloadService
 
 
 def handle_success(payload):
@@ -25,28 +9,36 @@ def handle_success(payload):
     if not reference:
         return {"status": "invalid_reference"}
 
-    # 🔐 STEP 1: Fetch payment once
     try:
-        payment = Payment.objects.select_for_update().get(reference=reference)
+        payment = Payment.objects.select_related("order").get(
+            reference=reference
+        )
     except Payment.DoesNotExist:
         return {"status": "not_found"}
 
-    # 🚫 STEP 2: IDEMPOTENCY CHECK (CRITICAL)
+    # idempotency check
     if payment.status == "success":
         return {"status": "already_processed"}
 
-    # 💳 STEP 3: Mark payment success
+    # mark payment successful
     payment.status = "success"
     payment.transaction_id = str(data.get("id"))
     payment.gateway_response = payload
     payment.save()
 
-    # 📦 STEP 4: Update order safely
+    # update order
     order = payment.order
 
     if order.status != "paid":
         order.status = "paid"
         order.save()
 
-    return {"status": "success"}
+    # 🔥 CRITICAL STEP — GRANT DOWNLOAD ACCESS
+    # Give user access to ALL products in the order
+    for item in order.items.select_related("product").all():
+        DownloadService.grant_access(
+            payment.user,
+            item.product,
+        )
 
+    return {"status": "success"}
