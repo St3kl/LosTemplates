@@ -10,4 +10,9 @@ urlpatterns = [
         views.secure_download,
         name="secure_download",
     ),
+    path(
+    "analytics/",
+    views.download_analytics,
+    name="analytics",
+),
 ]

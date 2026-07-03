@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>📊 Download Analytics</h2>
+
+    <hr>
+
+    <div class="row">
+
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h5>Total Downloads</h5>
+                <h3>{{ total_downloads }}</h3>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h5>Unique Users</h5>
+                <h3>{{ unique_users }}</h3>
+            </div>
+        </div>
+
+    </div>
+
+    <hr>
+
+    <h4>🔥 Top Products</h4>
+
+    <ul>
+        {% for item in top_products %}
+            <li>
+                {{ item.product__title }} — {{ item.total }} downloads
+            </li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+
+    <h4>🕒 Recent Activity</h4>
+
+    <ul>
+        {% for log in recent_downloads %}
+            <li>
+                {{ log.user }} downloaded {{ log.product }} at {{ log.downloaded_at }}
+            </li>
+        {% endfor %}
+    </ul>
+
+</div>
+
+{% endblock %}
