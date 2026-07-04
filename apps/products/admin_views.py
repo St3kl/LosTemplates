@@ -10,6 +10,8 @@ from django.shortcuts import (
     get_object_or_404,
 )
 
+from django.core.paginator import Paginator
+
 @staff_member_required
 def admin_product_list(request):
     """
@@ -105,4 +107,23 @@ def admin_product_edit(request, product_id):
             "title": f"Edit: {product.title}",
             "product": product,
         },
+    )
+    
+    
+@staff_member_required
+def admin_product_toggle(request, product_id):
+    """
+    Archive or restore a product.
+    """
+
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+    )
+
+    product.active = not product.active
+    product.save()
+
+    return redirect(
+        "products:admin_product_list"
     )

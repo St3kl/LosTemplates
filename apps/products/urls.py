@@ -23,4 +23,9 @@ urlpatterns = [
     admin_views.admin_product_edit,
     name="admin_product_edit",
 ),
+    path(
+    "admin/<int:product_id>/toggle/",
+    admin_views.admin_product_toggle,
+    name="admin_product_toggle",
+),
 ]

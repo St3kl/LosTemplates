@@ -59,13 +59,39 @@ class="btn btn-primary">
 
 <td>
 
+    <td>
+
     <a
         href="{% url 'products:admin_product_edit' product.id %}"
-        class="btn btn-sm btn-warning">
+        class="btn btn-sm btn-warning me-2">
 
-        Edit
+        <i class="bi bi-pencil-square"></i> Edit
 
     </a>
+
+    {% if product.active %}
+
+        <a
+            href="{% url 'products:admin_product_toggle' product.id %}"
+            class="btn btn-sm btn-danger">
+
+            <i class="bi bi-archive"></i> Archive
+
+        </a>
+
+    {% else %}
+
+        <a
+            href="{% url 'products:admin_product_toggle' product.id %}"
+            class="btn btn-sm btn-success">
+
+            <i class="bi bi-arrow-clockwise"></i> Restore
+
+        </a>
+
+    {% endif %}
+
+</td>
 
 </td>
 
@@ -88,6 +114,142 @@ class="btn btn-primary">
         </tbody>
 
     </table>
+    <form method="get" class="row g-3 mb-4">
+
+    <div class="col-md-5">
+
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Search product..."
+            value="{{ request.GET.search }}">
+
+    </div>
+
+    <div class="col-md-3">
+
+        <select
+            name="category"
+            class="form-select">
+
+            <option value="">
+                All Categories
+            </option>
+
+            {% for category in categories %}
+
+            <option
+                value="{{ category.id }}"
+                {% if request.GET.category == category.id|stringformat:"s" %}
+                selected
+                {% endif %}>
+
+                {{ category.name }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+    <div class="col-md-2">
+
+        <select
+            name="status"
+            class="form-select">
+
+            <option value="">
+                All Status
+            </option>
+
+            <option
+                value="active"
+                {% if request.GET.status == "active" %}
+                selected
+                {% endif %}>
+
+                Active
+
+            </option>
+
+            <option
+                value="archived"
+                {% if request.GET.status == "archived" %}
+                selected
+                {% endif %}>
+
+                Archived
+
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="col-md-2">
+
+        <button
+            class="btn btn-primary w-100">
+
+            Search
+
+        </button>
+
+    </div>
+
+</form>
+<nav class="mt-4">
+
+<ul class="pagination justify-content-center">
+
+{% if products.has_previous %}
+
+<li class="page-item">
+
+<a
+class="page-link"
+href="?page={{ products.previous_page_number }}">
+
+Previous
+
+</a>
+
+</li>
+
+{% endif %}
+
+<li class="page-item active">
+
+<span class="page-link">
+
+{{ products.number }}
+
+</span>
+
+</li>
+
+{% if products.has_next %}
+
+<li class="page-item">
+
+<a
+class="page-link"
+href="?page={{ products.next_page_number }}">
+
+Next
+
+</a>
+
+</li>
+
+{% endif %}
+
+</ul>
+
+</nav>
 
 </div>
 

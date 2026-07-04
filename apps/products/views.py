@@ -10,7 +10,9 @@ def product_list(request):
 
     products = Product.objects.filter(active=True)
 
-    categories = Category.objects.all()
+    categories = Product.objects.filter(
+    active=True
+)
 
     # --- Filtering by category ---
     category_slug = request.GET.get("category")
@@ -52,7 +54,8 @@ def product_detail(request, slug):
     product = get_object_or_404(
         Product,
         slug=slug,
-        active=True
+        active=True,
+
     )
 
     related_products = Product.objects.filter(
@@ -93,4 +96,7 @@ def download_product(request, slug):
         as_attachment=True,
         filename=os.path.basename(file_path)
     )
+    
+    
+    
 # Create your views here.
