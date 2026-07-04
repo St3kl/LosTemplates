@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <h2>LosTemplates Admin Dashboard</h2>
+
+    <div class="row mt-4">
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <h3>{{ users }}</h3>
+
+                <p>Users</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <h3>{{ products }}</h3>
+
+                <p>Products</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <h3>{{ orders }}</h3>
+
+                <p>Orders</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card p-3 text-center">
+
+                <h3>{{ payments }}</h3>
+
+                <p>Payments</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,7 +1,11 @@
 from django.shortcuts import render
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render
+
 from apps.products.models import Product
-
-
+from apps.orders.models import Order
+from apps.payments.models import Payment
+from django.contrib.auth import get_user_model
 def home(request):
 
     featured_products = Product.objects.filter(
@@ -15,3 +19,22 @@ def home(request):
 
     return render(request, "core/home.html", context)
 # Create your views here.
+
+User = get_user_model()
+
+
+@staff_member_required
+def admin_dashboard(request):
+
+    context = {
+        "users": User.objects.count(),
+        "products": Product.objects.count(),
+        "orders": Order.objects.count(),
+        "payments": Payment.objects.count(),
+    }
+
+    return render(
+        request,
+        "core/admin_dashboard.html",
+        context,
+    )
