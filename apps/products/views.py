@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from apps.orders.models import Order
 from .models import Product, Category
 from django.http import FileResponse, Http404

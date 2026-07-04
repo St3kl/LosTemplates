@@ -13,4 +13,9 @@ urlpatterns = [
     admin_views.admin_product_list,
     name="admin_product_list",
 ),
+    path(
+    "admin/create/",
+    admin_views.admin_product_create,
+    name="admin_product_create",
+),
 ]
