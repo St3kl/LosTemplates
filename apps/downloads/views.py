@@ -7,6 +7,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from apps.products.models import Product
 from .models import DownloadLog
 from .services import DownloadService
+from django.http import HttpResponse
+from .security import DownloadSecurity
 @login_required
 def secure_download(request, product_id):
     """
@@ -26,6 +28,16 @@ def secure_download(request, product_id):
         raise Http404(
             "You do not own this product."
         )
+        
+    # ----------------------------
+    # Rate Limiting
+    # ----------------------------
+
+    if not DownloadSecurity.can_download(request.user):
+        return HttpResponse(
+        "Please wait a few seconds before downloading again.",
+        status=429,
+    )    
 
     # ----------------------------
     # Local Storage
@@ -97,3 +109,18 @@ def download_analytics(request):
     }
 
     return render(request, "downloads/analytics.html", context)
+
+
+def get_client_ip(request):
+    """
+    Returns the client's IP address.
+    """
+
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+
+    if x_forwarded_for:
+        return x_forwarded_for.split(",")[0]
+
+    return request.META.get("REMOTE_ADDR")
+
+    
