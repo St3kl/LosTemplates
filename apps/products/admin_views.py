@@ -9,6 +9,7 @@ from django.shortcuts import (
     redirect,
     get_object_or_404,
 )
+from .models import Category
 
 from django.core.paginator import Paginator
 
@@ -18,11 +19,37 @@ def admin_product_list(request):
     Display all products for administrators.
     """
 
-    products = (
-        Product.objects
-        .select_related("category")
-        .order_by("-created_at")
-    )
+    products = Product.objects.select_related(
+        "category"
+    ).order_by("-created_at")
+
+    search = request.GET.get("search")
+
+    if search:
+        products = products.filter(
+            title__icontains=search
+        )
+
+    status = request.GET.get("status")
+
+    if status == "active":
+        products = products.filter(active=True)
+
+    elif status == "archived":
+        products = products.filter(active=False)
+
+    category = request.GET.get("category")
+
+    if category:
+        products = products.filter(
+            category__id=category
+        )
+
+    paginator = Paginator(products, 10)
+
+    page_number = request.GET.get("page")
+
+    products = paginator.get_page(page_number)
 
     return render(
         request,
@@ -31,8 +58,6 @@ def admin_product_list(request):
             "products": products,
         },
     )
-    
-
 
 
 @staff_member_required
@@ -127,3 +152,5 @@ def admin_product_toggle(request, product_id):
     return redirect(
         "products:admin_product_list"
     )
+    
+    
