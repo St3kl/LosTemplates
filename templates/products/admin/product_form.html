@@ -14,12 +14,19 @@
 
         {{ form.as_p }}
 
-        <button
-            class="btn btn-success">
+        <button class="btn btn-success">
 
-            Save Product
+    {% if product %}
 
-        </button>
+        Update Product
+
+    {% else %}
+
+        Create Product
+
+    {% endif %}
+
+</button>
 
         <a
             href="{% url 'products:admin_product_list' %}"

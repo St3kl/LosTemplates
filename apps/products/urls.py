@@ -18,4 +18,9 @@ urlpatterns = [
     admin_views.admin_product_create,
     name="admin_product_create",
 ),
+    path(
+    "admin/<int:product_id>/edit/",
+    admin_views.admin_product_edit,
+    name="admin_product_edit",
+),
 ]

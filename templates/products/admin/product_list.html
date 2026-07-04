@@ -27,6 +27,7 @@ class="btn btn-primary">
                 <th>Price</th>
                 <th>Status</th>
                 <th>Source</th>
+                <th>Actions</th>
 
             </tr>
 
@@ -55,6 +56,18 @@ class="btn btn-primary">
                 </td>
 
                 <td>{{ product.file_source }}</td>
+
+<td>
+
+    <a
+        href="{% url 'products:admin_product_edit' product.id %}"
+        class="btn btn-sm btn-warning">
+
+        Edit
+
+    </a>
+
+</td>
 
             </tr>
 
