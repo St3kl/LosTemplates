@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "apps.payments",
     "apps.downloads",
     "apps.core",
+    "apps.notifications",
 ]
 
 # --------------------------------------------------
