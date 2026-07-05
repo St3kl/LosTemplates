@@ -28,3 +28,18 @@ Migration
 
 python manage.py makemigrations notifications
 python manage.py migrate
+
+
+STEP 4 — Notification Integration
+
+Files Updated
+
+apps/accounts/views.py
+apps/orders/views.py
+apps/payments/webhooks.py
+
+Purpose
+
+• Automatically create notifications during important platform events.
+• Keep notification creation centralized through NotificationService.
+• Prepare the system for future email, SMS, push, and in-app notifications.

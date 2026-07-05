@@ -1,5 +1,9 @@
 import json
 
+from apps.payments.models import Payment
+from apps.notifications.services import NotificationService
+from apps.downloads.services import DownloadService
+
 
 def process_webhook(payload):
     """
@@ -14,11 +18,11 @@ def process_webhook(payload):
     return {"status": "ignored"}
 
 
-from apps.payments.models import Payment
-from apps.orders.models import Order
-
-
 def handle_success(payload):
+    """
+    Handle a successful Paystack payment.
+    """
+
     data = payload.get("data", {})
     reference = data.get("reference")
 
@@ -27,26 +31,51 @@ def handle_success(payload):
 
     # 🔐 STEP 1: Fetch payment once
     try:
-        payment = Payment.objects.select_for_update().get(reference=reference)
+        payment = Payment.objects.select_for_update().get(
+            reference=reference
+        )
     except Payment.DoesNotExist:
         return {"status": "not_found"}
 
-    # 🚫 STEP 2: IDEMPOTENCY CHECK (CRITICAL)
+    # 🚫 STEP 2: Prevent duplicate processing
     if payment.status == "success":
         return {"status": "already_processed"}
 
-    # 💳 STEP 3: Mark payment success
+    # 💳 STEP 3: Mark payment as successful
     payment.status = "success"
     payment.transaction_id = str(data.get("id"))
     payment.gateway_response = payload
     payment.save()
 
-    # 📦 STEP 4: Update order safely
+    # 📦 STEP 4: Mark order as paid
     order = payment.order
 
     if order.status != "paid":
         order.status = "paid"
         order.save()
 
-    return {"status": "success"}
+    # 🔔 STEP 5: Create notifications
+    NotificationService.order_confirmation(
+        payment.user,
+        order,
+    )
 
+    NotificationService.payment_success(
+        payment.user,
+        payment,
+    )
+
+    # 📥 STEP 6: Grant download access
+    for item in order.items.all():
+
+        DownloadService.grant_access(
+            payment.user,
+            item.product,
+        )
+
+        NotificationService.download_ready(
+            payment.user,
+            item.product,
+        )
+
+    return {"status": "success"}

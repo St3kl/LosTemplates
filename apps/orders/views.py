@@ -8,109 +8,140 @@ from apps.products.models import Product
 from .models import Order, OrderItem
 from .services import user_can_access_item
 
+
 def get_or_create_cart(user):
+    """
+    Returns the user's pending cart.
+    Creates one if it doesn't exist.
+    """
 
     order, created = Order.objects.get_or_create(
         user=user,
         status="pending",
-        defaults={"total_price": 0}
+        defaults={"total_price": 0},
     )
 
     return order
 
+
 # -------------------------
 # SINGLE PRODUCT PURCHASE
 # -------------------------
+
 @login_required
 def purchase_product(request, slug):
 
-    product = get_object_or_404(Product, slug=slug, active=True)
+    product = get_object_or_404(
+        Product,
+        slug=slug,
+        active=True,
+    )
 
     order = get_or_create_cart(request.user)
 
-    item, created = OrderItem.objects.get_or_create(
+    OrderItem.objects.get_or_create(
         order=order,
         product=product,
-        defaults={"price": product.price}
+        defaults={
+            "price": product.price,
+        },
     )
 
-    # always recalc total (prevents drift bugs)
+    # Always recalculate total
     order.total_price = sum(
-        i.price for i in order.items.all()
+        item.price for item in order.items.all()
     )
     order.save()
 
-    return redirect("product_detail", slug=slug)
+    return redirect(
+        "product_detail",
+        slug=slug,
+    )
+
 
 # -------------------------
 # CART CHECKOUT
 # -------------------------
+
 @login_required
 def checkout(request):
 
     order = (
         Order.objects
-        .filter(user=request.user, status="pending")
+        .filter(
+            user=request.user,
+            status="pending",
+        )
         .prefetch_related("items")
         .first()
     )
 
     if not order or not order.items.exists():
-        messages.warning(request, "Your cart is empty.")
+        messages.warning(
+            request,
+            "Your cart is empty.",
+        )
         return redirect("cart:cart")
 
-    # convert cart → paid order
-    order.status = "paid"
-    order.save()
-
-    messages.success(request, "Order completed successfully!")
-
-    # return redirect("orders:success")
+    # Redirect to Paystack
     return redirect(
-    "payments:start",
-    order_id=order.id
+        "payments:start",
+        order_id=order.id,
     )
+
 
 # -------------------------
 # SUCCESS PAGE
 # -------------------------
+
 def order_success(request):
-    return render(request, "orders/success.html")
+    return render(
+        request,
+        "orders/success.html",
+    )
 
 
 # -------------------------
 # ORDER DETAIL
 # -------------------------
+
 @login_required
 def order_detail(request, order_id):
 
     order = get_object_or_404(
         Order,
         id=order_id,
-        user=request.user
+        user=request.user,
     )
 
     return render(
         request,
         "orders/detail.html",
-        {"order": order}
+        {
+            "order": order,
+        },
     )
 
 
 # -------------------------
 # ORDER LIST
 # -------------------------
+
 @login_required
 def order_list(request):
 
-    orders = Order.objects.filter(
-        user=request.user
-    ).order_by("-created_at")
+    orders = (
+        Order.objects
+        .filter(user=request.user)
+        .order_by("-created_at")
+    )
 
     return render(
         request,
         "orders/list.html",
-        {"orders": orders}
+        {
+            "orders": orders,
+        },
     )
 
 
@@ -118,11 +149,13 @@ def order_list(request):
 # SECURE DOWNLOAD SYSTEM
 # -------------------------
 
-
 @login_required
 def download_product(request, item_id):
 
-    item = get_object_or_404(OrderItem, id=item_id)
+    item = get_object_or_404(
+        OrderItem,
+        id=item_id,
+    )
 
     file_path = item.product.download_file.path
 
@@ -135,5 +168,5 @@ def download_product(request, item_id):
     return FileResponse(
         open(file_path, "rb"),
         as_attachment=True,
-        filename=os.path.basename(file_path)
+        filename=os.path.basename(file_path),
     )
