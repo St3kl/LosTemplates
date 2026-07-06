@@ -17,3 +17,18 @@ Features
 ✔ Product relationship
 
 ✔ User relationship
+
+
+
+STEP 5 — Review Form
+
+Files Created
+
+apps/reviews/forms.py
+apps/reviews/services.py
+
+Purpose
+
+• Validate review submissions.
+• Separate business logic from views.
+• Prepare for verified purchase enforcement.
