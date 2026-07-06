@@ -30,6 +30,10 @@ def login_view(request):
 
     return render(request, "accounts/login.html")
 
+    from apps.notifications.services import NotificationService
+
+    NotificationService.welcome(user)
+
 
 def register_view(request):
 
