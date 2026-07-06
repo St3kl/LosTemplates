@@ -1,0 +1,27 @@
+{% extends "emails/base.html" %}
+
+{% block content %}
+
+<h2>Your Order is Ready</h2>
+
+<p>
+
+Your order
+
+<strong>
+
+#{{ order.id }}
+
+</strong>
+
+has been confirmed.
+
+</p>
+
+<p>
+
+You can now access your purchased templates.
+
+</p>
+
+{% endblock %}

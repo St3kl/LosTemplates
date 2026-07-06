@@ -1,0 +1,25 @@
+{% extends "emails/base.html" %}
+
+{% block content %}
+
+<h2>Welcome {{ user.first_name|default:user.username }}!</h2>
+
+<p>
+
+Thank you for joining LosTemplates.
+
+</p>
+
+<p>
+
+We're excited to help you build amazing web projects.
+
+</p>
+
+<a href="{{ dashboard_url }}" class="button">
+
+Open Dashboard
+
+</a>
+
+{% endblock %}
