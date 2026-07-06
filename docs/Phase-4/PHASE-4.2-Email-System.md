@@ -31,3 +31,17 @@ Purpose
 • Support reusable HTML templates.
 • Generate plain-text fallback automatically.
 • Prepare the platform for transactional emails.
+
+
+STEP 5 — Notification & Email Integration
+
+Files Updated
+
+apps/notifications/services.py
+
+Purpose
+
+• Every notification now also sends an email.
+• NotificationService is responsible for business events.
+• EmailService handles email rendering and delivery.
+• Uses HTML templates with plain-text fallback.
