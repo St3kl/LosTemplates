@@ -32,3 +32,24 @@ Purpose
 • Validate review submissions.
 • Separate business logic from views.
 • Prepare for verified purchase enforcement.
+
+
+
+STEP 6 — Verified Purchase Reviews
+
+Files Created
+
+apps/reviews/views.py
+apps/reviews/urls.py
+
+Files Updated
+
+apps/reviews/services.py
+config/urls.py
+
+Business Rules
+
+• Only authenticated users can review.
+• Only paid customers can review.
+• One review per product per user.
+• Business logic centralized in ReviewService.

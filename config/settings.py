@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.notifications",
     "apps.reviews",
+    "apps.wishlist",
 ]
 
 # --------------------------------------------------
