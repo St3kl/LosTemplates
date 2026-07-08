@@ -3,6 +3,7 @@ import json
 from apps.payments.models import Payment
 from apps.notifications.services import NotificationService
 from apps.downloads.services import DownloadService
+from apps.coupons.services import CouponService
 
 
 def process_webhook(payload):
@@ -49,6 +50,8 @@ def handle_success(payload):
 
     # 📦 STEP 4: Mark order as paid
     order = payment.order
+    order.status = "paid"
+    order.save()
 
     if order.status != "paid":
         order.status = "paid"
@@ -64,6 +67,12 @@ def handle_success(payload):
         payment.user,
         payment,
     )
+    # Coupon usage tracking
+    if order.coupon:
+
+        CouponService.mark_used(
+        order.coupon
+    )
 
     # 📥 STEP 6: Grant download access
     for item in order.items.all():
@@ -77,5 +86,8 @@ def handle_success(payload):
             payment.user,
             item.product,
         )
+    
+
+        
 
     return {"status": "success"}

@@ -83,3 +83,20 @@ class CouponService:
 
 
         return discount
+    
+    
+    @staticmethod
+    def mark_used(coupon):
+        """
+        Increase coupon usage count after successful payment.
+        """
+
+        if coupon:
+
+            coupon.times_used += 1
+
+            coupon.save(
+            update_fields=[
+                "times_used"
+            ]
+        )
