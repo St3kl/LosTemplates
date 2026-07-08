@@ -76,14 +76,35 @@ def checkout(request):
         .first()
     )
 
+
     if not order or not order.items.exists():
+
         messages.warning(
             request,
             "Your cart is empty.",
         )
-        return redirect("cart:cart")
 
-    # Redirect to Paystack
+        return redirect(
+            "cart:cart"
+        )
+
+
+    # Calculate final price after coupon
+
+    final_total = order.final_price
+
+
+    # Prevent negative totals
+
+    if final_total < 0:
+        final_total = 0
+
+
+    order.final_price = final_total
+
+    order.save()
+
+
     return redirect(
         "payments:start",
         order_id=order.id,

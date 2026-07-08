@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from apps.products.models import Product
+from apps.coupons.models import Coupon
 
 
 class Order(models.Model):
@@ -37,9 +38,31 @@ class Order(models.Model):
     updated_at = models.DateTimeField(
         auto_now=True
     )
+    
+    coupon = models.ForeignKey(
+    Coupon,
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name="orders",
+    )
+
+    discount = models.DecimalField(
+    max_digits=10,
+    decimal_places=2,
+    default=0,
+    )
 
     def __str__(self):
         return f"Order #{self.id} - {self.user.username}"
+    
+    @property
+    def final_price(self):
+
+        return max(
+        self.total_price - self.discount,
+        0
+        )
     
     
 

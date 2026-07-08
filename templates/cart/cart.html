@@ -117,6 +117,78 @@ Shopping Cart
 
         </div>
 
+        <div class="card mt-4">
+
+    <div class="card-body">
+
+        <h5>
+            Apply Coupon
+        </h5>
+
+
+        <form method="POST"
+              action="{% url 'coupons:apply' %}">
+
+            {% csrf_token %}
+
+
+            <input
+            type="text"
+            name="code"
+            class="form-control"
+            placeholder="Enter coupon code">
+
+
+            <button
+            class="btn btn-primary mt-2">
+
+                Apply Coupon
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<div class="mt-4">
+
+
+<p>
+Subtotal:
+
+<strong>
+${{ subtotal }}
+</strong>
+
+</p>
+
+
+<p>
+Discount:
+
+<strong>
+-${{ discount }}
+</strong>
+
+</p>
+
+
+<hr>
+
+
+<h4>
+
+Total:
+
+${{ final_total }}
+
+</h4>
+
+
+</div>
+
     {% else %}
 
         <div class="alert alert-info">

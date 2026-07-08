@@ -15,13 +15,51 @@ def cart_view(request):
             user=request.user,
             status="pending"
         )
-        .prefetch_related("items__product")
+        .prefetch_related(
+            "items__product"
+        )
         .first()
     )
 
+
+    if order:
+
+        cart_items = order.items.all()
+
+        subtotal = order.total_price
+
+        discount = order.discount
+
+        final_total = (
+            subtotal - discount
+        )
+
+    else:
+
+        cart_items = []
+
+        subtotal = 0
+
+        discount = 0
+
+        final_total = 0
+
+
+
     context = {
+
+        "cart_items": cart_items,
+
         "order": order,
+
+        "subtotal": subtotal,
+
+        "discount": discount,
+
+        "final_total": final_total,
+
     }
+
 
     return render(
         request,
