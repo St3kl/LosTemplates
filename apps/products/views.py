@@ -3,6 +3,7 @@ from apps.orders.models import Order
 from .models import Product, Category
 from django.http import FileResponse, Http404
 from django.contrib.auth.decorators import login_required
+from apps.analytics.services import AnalyticsService
 import os
 
 
@@ -57,6 +58,12 @@ def product_detail(request, slug):
         active=True,
 
     )
+    
+    AnalyticsService.track_product_view(
+    product=product,
+    user=request.user if request.user.is_authenticated else None,
+    ip_address=request.META.get("REMOTE_ADDR"),
+)
 
     related_products = Product.objects.filter(
         category=product.category,
@@ -67,6 +74,8 @@ def product_detail(request, slug):
         "product": product,
         "related_products": related_products
     }
+    
+    
 
     return render(request, "products/product_detail.html", context)
 

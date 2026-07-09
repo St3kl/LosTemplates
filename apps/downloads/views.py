@@ -9,6 +9,7 @@ from .models import DownloadLog
 from .services import DownloadService
 from django.http import HttpResponse
 from .security import DownloadSecurity
+from apps.analytics.services import AnalyticsService
 @login_required
 def secure_download(request, product_id):
     """
@@ -47,14 +48,21 @@ def secure_download(request, product_id):
 
         if not product.download_file:
             raise Http404(
-                "Download file missing."
-            )
-
-        return FileResponse(
-            product.download_file.open("rb"),
-            as_attachment=True,
-            filename=product.download_file.name.split("/")[-1],
+            "Download file missing."
         )
+
+
+    AnalyticsService.track_download(
+        product=product,
+        user=request.user,
+    )
+
+
+    return FileResponse(
+        product.download_file.open("rb"),
+        as_attachment=True,
+        filename=product.download_file.name.split("/")[-1],
+    )
 
     # ----------------------------
     # External Storage

@@ -35,6 +35,10 @@ urlpatterns = [
         "coupons/",
         include("apps.coupons.urls"),
     ),
+    path(
+    "analytics/",
+    include("apps.analytics.urls"),
+),
 
 ]
 

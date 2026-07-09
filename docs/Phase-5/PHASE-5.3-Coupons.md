@@ -97,3 +97,72 @@ Updated:
 apps/coupons/services.py
 
 apps/payments/webhooks.py
+
+# Phase 5.3 - Coupon Engine
+
+## Objective
+
+Create a complete discount system for LosTemplates.
+
+## Completed Features
+
+### Coupon Management
+
+- Create coupons from Django Admin
+- Activate/deactivate coupons
+- Configure expiration dates
+- Configure usage limits
+
+### Discount Types
+
+Supported:
+
+- Percentage discounts
+- Fixed amount discounts
+
+
+### Order Integration
+
+Orders now support:
+
+- Coupon reference
+- Discount amount
+- Final calculated price
+
+
+### Payment Integration
+
+Coupon usage is updated only after:
+
+Payment successful webhook
+        |
+        ↓
+Order marked paid
+        |
+        ↓
+Coupon usage incremented
+
+
+### Security
+
+Implemented:
+
+- Usage limit validation
+- Expiration validation
+- Duplicate webhook protection
+
+
+## Updated Applications
+
+apps/coupons
+
+apps/orders
+
+apps/payments
+
+apps/cart
+
+
+## Status
+
+Completed ✅

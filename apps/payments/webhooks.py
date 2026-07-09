@@ -4,6 +4,7 @@ from apps.payments.models import Payment
 from apps.notifications.services import NotificationService
 from apps.downloads.services import DownloadService
 from apps.coupons.services import CouponService
+from apps.analytics.services import AnalyticsService
 
 
 def process_webhook(payload):
@@ -56,6 +57,14 @@ def handle_success(payload):
     if order.status != "paid":
         order.status = "paid"
         order.save()
+        
+    for item in order.items.all():
+
+        AnalyticsService.track_sale(
+        product=item.product,
+        user=payment.user,
+        price=item.price,
+    )    
 
     # 🔔 STEP 5: Create notifications
     NotificationService.order_confirmation(
