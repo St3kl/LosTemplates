@@ -6,13 +6,12 @@ from django.contrib.auth.decorators import login_required
 from apps.orders.models import Order
 from apps.orders.models import OrderItem
 
-from apps.orders.models import OrderItem
 
-OrderItem.objects.filter(product__isnull=True)
+
+
 
 
 def login_view(request):
-
     if request.method == "POST":
 
         username = request.POST.get("username")
@@ -21,18 +20,31 @@ def login_view(request):
         user = authenticate(
             request,
             username=username,
-            password=password
+            password=password,
         )
 
         if user:
             login(request, user)
-            return redirect("product_list")
 
-    return render(request, "accounts/login.html")
+            next_url = (
+                request.POST.get("next")
+                or request.GET.get("next")
+            )
 
-    from apps.notifications.services import NotificationService
+            if next_url:
+                return redirect(next_url)
 
-    NotificationService.welcome(user)
+            return redirect("products:product_list")
+
+        messages.error(
+            request,
+            "Invalid username or password.",
+        )
+
+    return render(
+        request,
+        "accounts/login.html",
+    )
 
 
 def register_view(request):
@@ -71,7 +83,7 @@ def register_view(request):
 
         messages.success(request, "Account created successfully!")
 
-        return redirect("product_list")
+        return redirect("products:product_list")
 
     return render(request, "accounts/register.html")
 
@@ -79,7 +91,7 @@ def logout_view(request):
 
     logout(request)
 
-    return redirect("product_list")
+    return redirect("products:product_list")
 
 @login_required
 def dashboard(request):
