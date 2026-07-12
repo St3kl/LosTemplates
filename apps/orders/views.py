@@ -76,7 +76,6 @@ def checkout(request):
         .first()
     )
 
-
     if not order or not order.items.exists():
 
         messages.warning(
@@ -84,10 +83,21 @@ def checkout(request):
             "Your cart is empty.",
         )
 
-        return redirect(
-            "cart:cart"
-        )
+        return redirect("cart:cart")
 
+    # Calculate final price after coupon
+    final_total = order.final_price
+
+    # Prevent negative totals
+    if final_total < 0:
+        final_total = 0
+
+    # No need to save final_price because it's a property
+
+    return redirect(
+        "payments:start",
+        order_id=order.id,
+    )
 
     # Calculate final price after coupon
 

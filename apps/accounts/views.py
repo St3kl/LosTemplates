@@ -59,19 +59,19 @@ def register_view(request):
         # Validation
         if not username or not email or not password:
             messages.error(request, "All fields are required.")
-            return redirect("register")
+            return redirect("accounts:register")
 
         if password != confirm_password:
             messages.error(request, "Passwords do not match.")
-            return redirect("register")
+            return redirect("accounts:register")
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists.")
-            return redirect("register")
+            return redirect("accounts:register")
 
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email already exists.")
-            return redirect("register")
+            return redirect("accounts:register")
 
         user = User.objects.create_user(
             username=username,
