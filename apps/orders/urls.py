@@ -11,7 +11,7 @@ urlpatterns = [
     path(
         "",
         views.order_list,
-        name="order_list",
+        name="list",
     ),
 
     # =========================
@@ -24,7 +24,7 @@ urlpatterns = [
     ),
 
     # =========================
-    # PURCHASE PRODUCT
+    # PURCHASE
     # =========================
     path(
         "purchase/<slug:slug>/",
@@ -42,7 +42,7 @@ urlpatterns = [
     ),
 
     # =========================
-    # PAYMENT SUCCESS
+    # SUCCESS
     # =========================
     path(
         "success/",
@@ -51,7 +51,7 @@ urlpatterns = [
     ),
 
     # =========================
-    # DOWNLOAD PURCHASED PRODUCT
+    # DOWNLOAD
     # =========================
     path(
         "download/<int:item_id>/",

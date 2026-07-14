@@ -8,6 +8,7 @@ from .forms import ReviewForm
 from .services import ReviewService
 
 
+
 @login_required
 def create_review(request, slug):
 
@@ -47,6 +48,12 @@ def create_review(request, slug):
             slug=slug,
         )
 
+    if request.method != "POST":
+        return redirect(
+        "products:product_detail",
+        slug=slug,
+    )
+
     form = ReviewForm(request.POST)
 
     if form.is_valid():
@@ -60,7 +67,14 @@ def create_review(request, slug):
 
         messages.success(
             request,
-            "Review submitted successfully.",
+        "Review submitted successfully.",
+        )
+
+    else:
+
+        messages.error(
+            request,
+            "Please correct the errors in your review.",
         )
 
     return redirect(

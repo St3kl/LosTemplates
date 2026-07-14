@@ -1,9 +1,10 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
-from apps.products.models import Product
-from django.contrib import messages
+
 from apps.orders.models import Order, OrderItem
+from apps.products.models import Product
 
 
 @login_required
@@ -13,58 +14,43 @@ def cart_view(request):
         Order.objects
         .filter(
             user=request.user,
-            status="pending"
+            status="pending",
         )
-        .prefetch_related(
-            "items__product"
-        )
+        .prefetch_related("items__product")
         .first()
     )
 
-
     if order:
 
-        cart_items = order.items.all()
+        cart_items = (
+            order.items
+            .select_related("product")
+            .all()
+        )
 
         subtotal = order.total_price
-
         discount = order.discount
-
-        final_total = (
-            subtotal - discount
-        )
+        final_total = subtotal - discount
 
     else:
 
         cart_items = []
-
         subtotal = 0
-
         discount = 0
-
         final_total = 0
 
-
-
     context = {
-
         "cart_items": cart_items,
-
         "order": order,
-
         "subtotal": subtotal,
-
         "discount": discount,
-
         "final_total": final_total,
-
     }
-
 
     return render(
         request,
         "cart/cart.html",
-        context
+        context,
     )
 
 
@@ -72,54 +58,59 @@ def cart_view(request):
 @login_required
 def add_to_cart(request, product_id):
 
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+    )
 
-    # Get the user's active cart
     order = (
         Order.objects
         .filter(
             user=request.user,
-            status="pending"
+            status="pending",
         )
         .first()
     )
 
-    # Create a cart if none exists
     if order is None:
+
         order = Order.objects.create(
             user=request.user,
             status="pending",
-            total_price=0
+            total_price=0,
         )
 
-    # Prevent duplicate products
     item, created = OrderItem.objects.get_or_create(
         order=order,
         product=product,
         defaults={
-            "price": product.price
-        }
+            "price": product.price,
+        },
     )
 
     if created:
+
         messages.success(
             request,
-            f'"{product.title}" added to your cart.'
-        )
-    else:
-        messages.warning(
-            request,
-            f'"{product.title}" is already in your cart.'
+            f'"{product.title}" added to your cart.',
         )
 
-    # Recalculate total
+    else:
+
+        messages.warning(
+            request,
+            f'"{product.title}" is already in your cart.',
+        )
+
     order.total_price = sum(
         item.price
         for item in order.items.all()
     )
+
     order.save()
 
     return redirect("cart:cart")
+
 
 @login_required
 def remove_from_cart(request, product_id):
@@ -128,7 +119,7 @@ def remove_from_cart(request, product_id):
         Order.objects
         .filter(
             user=request.user,
-            status="pending"
+            status="pending",
         )
         .first()
     )
@@ -137,19 +128,16 @@ def remove_from_cart(request, product_id):
 
         OrderItem.objects.filter(
             order=order,
-            product_id=product_id
+            product_id=product_id,
         ).delete()
 
-        # Recalculate total
-        total = sum(
+        order.total_price = sum(
             item.price
             for item in order.items.all()
         )
 
-        order.total_price = total
         order.save()
 
-        # Optional: delete empty cart
         if not order.items.exists():
             order.delete()
 

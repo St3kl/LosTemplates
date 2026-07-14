@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import (
     get_object_or_404,
@@ -6,19 +7,16 @@ from django.shortcuts import (
 )
 
 from apps.products.models import Product
-
 from .services import WishlistService
 
 
 @login_required
 def wishlist(request):
     """
-    Display the user's wishlist.
+    Display the current user's wishlist.
     """
 
-    items = WishlistService.user_items(
-        request.user,
-    )
+    items = WishlistService.user_items(request.user)
 
     return render(
         request,
@@ -41,10 +39,21 @@ def toggle_wishlist(request, product_id):
         active=True,
     )
 
-    WishlistService.toggle(
+    added = WishlistService.toggle(
         request.user,
         product,
     )
+
+    if added:
+        messages.success(
+            request,
+            f'"{product.title}" added to your wishlist.',
+        )
+    else:
+        messages.info(
+            request,
+            f'"{product.title}" removed from your wishlist.',
+        )
 
     return redirect(
         "products:product_detail",

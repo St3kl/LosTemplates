@@ -57,8 +57,13 @@
     Buy / Unlock
 
 </a>
-<form action="{% url 'cart:add' product.id %}" method="post">
+<form action="{% url 'cart:add_to_cart' product.id %}" method="post">
+    <a href="{% url 'wishlist:toggle' product.id %}"
+   class="btn btn-outline-danger w-100 mt-2">
 
+    ❤️ Add to Wishlist
+
+</a>
 
     {% csrf_token %}
 
@@ -106,6 +111,167 @@
         </p>
 
     </div>
+    <!-- ================================= -->
+<!-- REVIEWS -->
+<!-- ================================= -->
+
+<div class="mt-5">
+
+    <h3>Customer Reviews</h3>
+
+    <hr>
+
+    {% if product.reviews.all %}
+
+        {% for review in product.reviews.all %}
+
+            {% if review.approved %}
+
+                <div class="card mb-3">
+
+                    <div class="card-body">
+
+                        <div class="d-flex justify-content-between">
+
+                            <strong>
+
+                                {{ review.user.username }}
+
+                            </strong>
+
+                            <small class="text-muted">
+
+                                {{ review.created_at|date:"M d, Y" }}
+
+                            </small>
+
+                        </div>
+
+                        <div class="text-warning mb-2">
+
+                            {% for i in "12345" %}
+
+                                {% if forloop.counter <= review.rating %}
+
+                                    ★
+
+                                {% else %}
+
+                                    ☆
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                        </div>
+
+                        <p>
+
+                            {{ review.comment }}
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        {% empty %}
+
+            <div class="alert alert-light border">
+
+                No reviews yet.
+
+                Be the first to review this template!
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+</div>
+
+<!-- ================================= -->
+<!-- WRITE REVIEW -->
+<!-- ================================= -->
+
+{% if user.is_authenticated %}
+
+<div class="card mt-5">
+
+    <div class="card-header">
+
+        Write a Review
+
+    </div>
+
+    <div class="card-body">
+
+        <form
+            method="POST"
+            action="{% url 'reviews:create_review' product.slug %}">
+
+            {% csrf_token %}
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Rating
+
+                </label>
+
+                <select
+                    name="rating"
+                    class="form-select"
+                    required>
+
+                    <option value="">Choose...</option>
+
+                    <option value="5">★★★★★</option>
+                    <option value="4">★★★★☆</option>
+                    <option value="3">★★★☆☆</option>
+                    <option value="2">★★☆☆☆</option>
+                    <option value="1">★☆☆☆☆</option>
+
+                </select>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Comment
+
+                </label>
+
+                <textarea
+                    name="comment"
+                    rows="4"
+                    class="form-control"
+                    required>
+
+                </textarea>
+
+            </div>
+
+            <button
+                class="btn btn-primary">
+
+                Submit Review
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endif %}
 
     <!-- FEATURES BLOCK (placeholder structure) -->
     <div class="mt-5">

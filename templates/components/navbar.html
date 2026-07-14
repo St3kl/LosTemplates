@@ -71,37 +71,44 @@
 
     <ul class="dropdown-menu dropdown-menu-end">
 
-        <li>
-            <a class="dropdown-item"
-               href="{% url 'accounts:dashboard' %}">
-                Dashboard
-            </a>
-        </li>
+    <li>
+        <a class="dropdown-item"
+           href="{% url 'accounts:dashboard' %}">
+            Dashboard
+        </a>
+    </li>
 
-        <li>
-            <a class="dropdown-item"
-               href="{% url 'orders:order_list' %}">
-                Orders
-            </a>
-        </li>
+    <li>
+        <a class="dropdown-item"
+           href="{% url 'orders:list' %}">
+            Orders
+        </a>
+    </li>
 
-        <li>
-            <a class="dropdown-item"
-               href="{% url 'accounts:downloads' %}">
-                Downloads
-            </a>
-        </li>
+    <li>
+        <a class="dropdown-item"
+           href="{% url 'accounts:downloads' %}">
+            Downloads
+        </a>
+    </li>
 
-        <li><hr class="dropdown-divider"></li>
+    <li>
+        <a class="dropdown-item"
+           href="{% url 'wishlist:wishlist' %}">
+            ❤️ Wishlist
+        </a>
+    </li>
 
-        <li>
-            <a class="dropdown-item text-danger"
-               href="{% url 'accounts:logout' %}">
-                Logout
-            </a>
-        </li>
+    <li><hr class="dropdown-divider"></li>
 
-    </ul>
+    <li>
+        <a class="dropdown-item text-danger"
+           href="{% url 'accounts:logout' %}">
+            Logout
+        </a>
+    </li>
+
+</ul>
 
 </div>
 

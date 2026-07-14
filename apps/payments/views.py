@@ -1,16 +1,23 @@
+import json
+
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 
 from apps.orders.models import Order
 from .models import Payment
 from .services import PaystackService
-
 from .utils import verify_paystack_signature
 from .webhooks import process_webhook
 
 
+# ==========================================================
+# START PAYMENT
+# ==========================================================
+
+@login_required
 def start_payment(request, order_id):
 
     order = get_object_or_404(
@@ -19,40 +26,48 @@ def start_payment(request, order_id):
         user=request.user,
     )
 
+    # Prevent paying an order twice
+    if order.status == "paid":
+        return redirect("accounts:downloads")
+
     callback_url = request.build_absolute_uri(
         reverse("payments:callback")
     )
 
     response = PaystackService.initialize_payment(
-        request.user.email,
-        order.total_price,
-        callback_url,
+        email=request.user.email,
+        amount=order.total_price,
+        callback_url=callback_url,
     )
 
-    if response.get("status"):
-
-        reference = response["data"]["reference"]
-
-        payment, created = Payment.objects.update_or_create(
-            order=order,
-            defaults={
-                "user": request.user,
-                "reference": reference,
-                "amount": order.total_price,
-                "status": "pending",
-            },
+    if not response.get("status"):
+        return HttpResponse(
+            "Unable to initialize payment.",
+            status=400,
         )
 
-        return redirect(
-            response["data"]["authorization_url"]
-        )
+    reference = response["data"]["reference"]
 
-    return HttpResponse(
-        "Unable to initialize payment.",
-        status=400,
+    Payment.objects.update_or_create(
+        order=order,
+        defaults={
+            "user": request.user,
+            "reference": reference,
+            "amount": order.total_price,
+            "status": "pending",
+        },
+    )
+
+    return redirect(
+        response["data"]["authorization_url"]
     )
 
 
+# ==========================================================
+# PAYMENT CALLBACK
+# ==========================================================
+
+@login_required
 def payment_callback(request):
 
     reference = request.GET.get("reference")
@@ -65,36 +80,56 @@ def payment_callback(request):
 
     response = PaystackService.verify_payment(reference)
 
-    if response.get("status"):
-
-        payment = get_object_or_404(
-            Payment,
-            reference=reference,
+    # API request failed
+    if not response.get("status"):
+        return HttpResponse(
+            "Payment verification failed.",
+            status=400,
         )
 
-        payment.status = "success"
-        payment.transaction_id = str(response["data"]["id"])
-        payment.gateway_response = response
-        payment.save()
+    # Payment not successful
+    if response["data"]["status"] != "success":
+        return HttpResponse(
+            "Payment was not successful.",
+            status=400,
+        )
 
-        payment.order.status = "paid"
-        payment.order.save()
-
-        return redirect("accounts:downloads")
-
-    return HttpResponse(
-        "Payment verification failed.",
-        status=400,
+    payment = get_object_or_404(
+        Payment,
+        reference=reference,
     )
 
+    # Verify amount
+    expected_amount = int(payment.amount * 100)
 
-import hashlib
-import hmac
-import json
+    if response["data"]["amount"] != expected_amount:
+        return HttpResponse(
+            "Payment amount mismatch.",
+            status=400,
+        )
 
-from django.conf import settings
-from django.http import HttpResponse
-from .webhooks import process_webhook
+    # Verify customer email
+    if response["data"]["customer"]["email"] != payment.user.email:
+        return HttpResponse(
+            "Customer verification failed.",
+            status=400,
+        )
+
+    payment.status = "success"
+    payment.transaction_id = str(response["data"]["id"])
+    payment.gateway_response = response
+    payment.save()
+
+    order = payment.order
+    order.status = "paid"
+    order.save()
+
+    return redirect("accounts:downloads")
+
+
+# ==========================================================
+# PAYSTACK WEBHOOK
+# ==========================================================
 
 @csrf_exempt
 def paystack_webhook(request):
@@ -102,14 +137,17 @@ def paystack_webhook(request):
     if request.method != "POST":
         return HttpResponse(status=405)
 
-    # 1. Verify signature FIRST
+    # Verify webhook signature
     if not verify_paystack_signature(request):
         return HttpResponse(status=403)
 
-    # 2. Parse payload
-    payload = json.loads(request.body.decode("utf-8"))
+    try:
+        payload = json.loads(
+            request.body.decode("utf-8")
+        )
+    except json.JSONDecodeError:
+        return HttpResponse(status=400)
 
-    # 3. Process event
     process_webhook(payload)
 
     return HttpResponse(status=200)

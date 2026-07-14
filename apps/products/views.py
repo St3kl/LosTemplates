@@ -5,15 +5,15 @@ from django.http import FileResponse, Http404
 from django.contrib.auth.decorators import login_required
 from apps.analytics.services import AnalyticsService
 import os
+from apps.orders.models import OrderItem
+from apps.reviews.services import ReviewService
 
 
 def product_list(request):
 
     products = Product.objects.filter(active=True)
 
-    categories = Product.objects.filter(
-    active=True
-)
+    categories = Category.objects.order_by("name")
 
     # --- Filtering by category ---
     category_slug = request.GET.get("category")
@@ -22,7 +22,7 @@ def product_list(request):
         products = products.filter(category__slug=category_slug)
 
     # --- Search ---
-    search_query = request.GET.get("search")
+    search_query = request.GET.get("q")
 
     if search_query:
         products = products.filter(title__icontains=search_query)
@@ -71,9 +71,25 @@ def product_detail(request, slug):
     ).exclude(id=product.id)[:4]
 
     context = {
-        "product": product,
-        "related_products": related_products
-    }
+    "product": product,
+    "related_products": related_products,
+
+    "reviews": ReviewService.product_reviews(product),
+    "average_rating": ReviewService.average_rating(product),
+    "review_count": ReviewService.total_reviews(product),
+
+    "can_review": (
+        request.user.is_authenticated
+        and ReviewService.can_review(
+            request.user,
+            product,
+        )
+        and not ReviewService.has_review(
+            request.user,
+            product,
+        )
+    ),
+}
     
     
 
@@ -86,14 +102,17 @@ def download_product(request, slug):
     product = get_object_or_404(Product, slug=slug, active=True)
 
     # CHECK OWNERSHIP
-    has_order = Order.objects.filter(
-        user=request.user,
-        product=product,
-        paid=True
-    ).exists()
+    has_order = OrderItem.objects.filter(
+    order__user=request.user,
+    order__status="paid",
+    product=product,
+).exists()
 
     if not has_order:
-        return redirect("product_detail", slug=slug)
+        return redirect(
+    "products:product_detail",
+    slug=slug,
+)
 
     file_path = product.download_file.path
 

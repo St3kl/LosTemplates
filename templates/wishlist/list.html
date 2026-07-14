@@ -20,10 +20,14 @@
 
                     <div class="card h-100">
 
-                        <img
-                            src="{{ item.product.thumbnail.url }}"
-                            class="card-img-top"
-                        >
+                        {% if item.product.thumbnail %}
+
+<img
+    src="{{ item.product.thumbnail.url }}"
+    class="card-img-top"
+    alt="{{ item.product.title }}">
+
+{% endif %}
 
                         <div class="card-body">
 

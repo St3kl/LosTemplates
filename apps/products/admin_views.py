@@ -1,5 +1,5 @@
 from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render, redirect
+# from django.shortcuts import render, redirect
 
 from .models import Product
 from .forms import ProductForm
@@ -9,7 +9,7 @@ from django.shortcuts import (
     redirect,
     get_object_or_404,
 )
-from .models import Category
+# from .models import Category
 
 from django.core.paginator import Paginator
 

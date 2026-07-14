@@ -66,3 +66,58 @@ class ReviewService:
         review.save()
 
         return review
+    
+    
+    @staticmethod
+    def product_reviews(product):
+        """
+        Return all approved reviews
+        for a product.
+        """
+
+        return (
+            Review.objects
+            .filter(
+                product=product,
+                approved=True,
+            )
+            .select_related("user")
+            .order_by("-created_at")
+        )
+
+
+    @staticmethod
+    def average_rating(product):
+        """
+        Calculate the average rating.
+        """
+
+        reviews = Review.objects.filter(
+            product=product,
+            approved=True,
+        )
+
+        if not reviews.exists():
+            return 0
+
+        total = sum(
+            review.rating
+            for review in reviews
+        )
+
+        return round(
+            total / reviews.count(),
+            1,
+        )
+
+
+    @staticmethod
+    def total_reviews(product):
+        """
+        Total approved reviews.
+        """
+
+        return Review.objects.filter(
+            product=product,
+            approved=True,
+        ).count()
