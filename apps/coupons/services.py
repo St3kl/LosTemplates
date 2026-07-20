@@ -24,7 +24,9 @@ class CouponService:
         now = timezone.now()
 
 
-        if not coupon.active:
+        # if not coupon.active:
+        #     return None
+        if not coupon.is_available:
             return None
 
 

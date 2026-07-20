@@ -1,15 +1,19 @@
-import json
+from django.db import transaction
+from django.utils import timezone
 
-from apps.payments.models import Payment
-from apps.notifications.services import NotificationService
-from apps.downloads.services import DownloadService
-from apps.coupons.services import CouponService
 from apps.analytics.services import AnalyticsService
+from apps.coupons.services import CouponService
+from apps.downloads.services import DownloadService
+from apps.notifications.services import NotificationService
+
+from .models import Payment
+from apps.payments.services import PaystackService
 
 
 def process_webhook(payload):
     """
-    Handles Paystack webhook events.
+    Route Paystack webhook events
+    to the appropriate handler.
     """
 
     event = payload.get("event")
@@ -17,86 +21,166 @@ def process_webhook(payload):
     if event == "charge.success":
         return handle_success(payload)
 
-    return {"status": "ignored"}
+    return {
+        "status": "ignored",
+        "event": event,
+    }
 
 
 def handle_success(payload):
-    """
-    Handle a successful Paystack payment.
-    """
 
-    data = payload.get("data", {})
-    reference = data.get("reference")
+    data = payload.get(
+        "data",
+        {},
+    )
+
+    reference = data.get(
+        "reference",
+    )
 
     if not reference:
-        return {"status": "invalid_reference"}
 
-    # 🔐 STEP 1: Fetch payment once
+        return {
+            "status": "invalid_reference",
+        }
+
     try:
-        payment = Payment.objects.select_for_update().get(
-            reference=reference
+
+        payment = Payment.objects.get(
+            reference=reference,
         )
+
     except Payment.DoesNotExist:
-        return {"status": "not_found"}
 
-    # 🚫 STEP 2: Prevent duplicate processing
-    if payment.status == "success":
-        return {"status": "already_processed"}
+        return {
+            "status": "not_found",
+        }
 
-    # 💳 STEP 3: Mark payment as successful
-    payment.status = "success"
-    payment.transaction_id = str(data.get("id"))
-    payment.gateway_response = payload
-    payment.save()
+        return PaystackService.complete_payment(
+        payment=payment,
+        gateway_response=payload,
+    )
 
-    # 📦 STEP 4: Mark order as paid
-    order = payment.order
-    order.status = "paid"
-    order.save()
+        # ---------------------------------
+        # PREVENT DUPLICATE PROCESSING
+        # ---------------------------------
 
-    if order.status != "paid":
+        if payment.status == "success":
+            return {
+                "status": "already_processed",
+            }
+
+        # ---------------------------------
+        # MARK PAYMENT AS SUCCESSFUL
+        # ---------------------------------
+
+        payment.status = "success"
+
+        payment.transaction_id = str(
+            data.get("id")
+        )
+
+        payment.paid_at = timezone.now()
+
+        payment.gateway_response = payload
+
+        payment.save(
+            update_fields=[
+                "status",
+                "transaction_id",
+                "paid_at",
+                "gateway_response",
+                "updated_at",
+            ]
+        )
+
+        # ---------------------------------
+        # MARK ORDER AS PAID
+        # ---------------------------------
+
+        order = payment.order
+
         order.status = "paid"
-        order.save()
-        
-    for item in order.items.all():
 
-        AnalyticsService.track_sale(
-        product=item.product,
-        user=payment.user,
-        price=item.price,
-    )    
-
-    # 🔔 STEP 5: Create notifications
-    NotificationService.order_confirmation(
-        payment.user,
-        order,
-    )
-
-    NotificationService.payment_success(
-        payment.user,
-        payment,
-    )
-    # Coupon usage tracking
-    if order.coupon:
-
-        CouponService.mark_used(
-        order.coupon
-    )
-
-    # 📥 STEP 6: Grant download access
-    for item in order.items.all():
-
-        DownloadService.grant_access(
-            payment.user,
-            item.product,
+        order.save(
+            update_fields=[
+                "status",
+                "updated_at",
+            ]
         )
 
-        NotificationService.download_ready(
-            payment.user,
-            item.product,
+        # ---------------------------------
+        # PROCESS ORDER ITEMS
+        # ---------------------------------
+
+        order_items = (
+            order.items
+            .select_related(
+                "product",
+            )
+            .all()
         )
-    
 
-        
+        for item in order_items:
 
-    return {"status": "success"}
+            # -----------------------------
+            # ANALYTICS
+            # -----------------------------
+
+            AnalyticsService.track_sale(
+                product=item.product,
+                user=payment.user,
+                price=item.price,
+            )
+
+            # -----------------------------
+            # GRANT DOWNLOAD ACCESS
+            # -----------------------------
+
+            DownloadService.grant_access(
+                payment.user,
+                item.product,
+            )
+
+        # ---------------------------------
+        # COUPON USAGE
+        # ---------------------------------
+
+        if order.coupon:
+
+            CouponService.mark_used(
+                order.coupon,
+            )
+
+        # ---------------------------------
+        # ORDER NOTIFICATION
+        # ---------------------------------
+
+        NotificationService.order_confirmation(
+            payment.user,
+            order,
+        )
+
+        # ---------------------------------
+        # PAYMENT NOTIFICATION
+        # ---------------------------------
+
+        NotificationService.payment_success(
+            payment.user,
+            payment,
+        )
+
+        # ---------------------------------
+        # DOWNLOAD NOTIFICATIONS
+        # ---------------------------------
+
+        for item in order_items:
+
+            NotificationService.download_ready(
+                payment.user,
+                item.product,
+            )
+
+    return {
+        "status": "success",
+    }

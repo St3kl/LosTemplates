@@ -2,27 +2,132 @@
 
 {% block content %}
 
-<div class="container py-5" style="max-width:500px;">
+<div class="container py-5">
 
-    <h2 class="mb-4">Login</h2>
+    <div class="row justify-content-center">
 
-    <form method="POST">
-        {% csrf_token %}
+        <div class="col-md-5">
 
-        <input type="text"
-               name="username"
-               class="form-control mb-3"
-               placeholder="Username">
+            <div class="card shadow-sm">
 
-        <input type="password"
-               name="password"
-               class="form-control mb-3"
-               placeholder="Password">
+                <div class="card-body p-4">
 
-        <button class="btn btn-primary w-100">
-            Login
-        </button>
-    </form>
+                    <h2 class="text-center mb-4">
+                        Login
+                    </h2>
+
+                    <form method="POST">
+
+                        {% csrf_token %}
+
+                        <input
+                            type="hidden"
+                            name="next"
+                            value="{{ next|default:'' }}"
+                        >
+
+                        {% if form.non_field_errors %}
+
+                            <div class="alert alert-danger">
+
+                                {{ form.non_field_errors }}
+
+                            </div>
+
+                        {% endif %}
+
+                        <div class="mb-3">
+
+                            <label
+                                for="{{ form.username.id_for_label }}"
+                                class="form-label"
+                            >
+
+                                Username
+
+                            </label>
+
+                            {{ form.username }}
+
+                            {% for error in form.username.errors %}
+
+                                <div class="text-danger small">
+
+                                    {{ error }}
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label
+                                for="{{ form.password.id_for_label }}"
+                                class="form-label"
+                            >
+
+                                Password
+
+                            </label>
+
+                            {{ form.password }}
+
+                            {% for error in form.password.errors %}
+
+                                <div class="text-danger small">
+
+                                    {{ error }}
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+
+                            Login
+
+                        </button>
+
+                    </form>
+
+                    <p class="text-center mt-3 mb-0">
+
+                        Don't have an account?
+
+                        <a
+                            href="{% url 'accounts:register' %}"
+                        >
+
+                            Register
+
+                        </a>
+
+                    </p>
+
+                    <p class="text-center mt-3">
+
+                        <a href="{% url 'accounts:password_reset' %}">
+
+                            Forgot your password?
+
+                        </a>
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 

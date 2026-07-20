@@ -11,8 +11,8 @@ class CouponAdmin(admin.ModelAdmin):
         "discount_type",
         "value",
         "active",
-        "usage_limit",
         "times_used",
+        "usage_limit",
         "valid_from",
         "valid_until",
     )
@@ -24,4 +24,13 @@ class CouponAdmin(admin.ModelAdmin):
 
     search_fields = (
         "code",
+    )
+
+    ordering = (
+        "-created_at",
+    )
+
+    readonly_fields = (
+        "times_used",
+        "created_at",
     )

@@ -60,10 +60,10 @@
                                         {{ item.product.short_description }}
                                     </p>
 
-                                    {% if item.product.slug %}
+                                    {% if item.product.id %}
 
-                                        <a href="{% url 'orders:download_product' item.id %}">
-                                            Download
+                                        <a href="{% url 'downloads:secure_download' item.product.id %}">
+                                        Download
                                         </a>
 
                                     {% else %}

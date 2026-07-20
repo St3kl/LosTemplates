@@ -1,48 +1,145 @@
-"""
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import include, path
 
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 urlpatterns = [
-    path("", include("apps.core.urls")),
-    path("products/", include("apps.products.urls")),
-    path("accounts/", include("apps.accounts.urls")),
-    path("orders/", include("apps.orders.urls")),
-    path("admin/", admin.site.urls),
-    path("cart/", include("apps.cart.urls")),
-    path("payments/", include("apps.payments.urls")),
-    path("downloads/", include("apps.downloads.urls")),
-    path("reviews/", include("apps.reviews.urls")),
-    path("wishlist/", include("apps.wishlist.urls")),
+
+    # =========================
+    # CORE
+    # =========================
+
+    path(
+        "",
+        include("apps.core.urls"),
+    ),
+
+
+    # =========================
+    # PRODUCTS
+    # =========================
+
+    path(
+        "products/",
+        include("apps.products.urls"),
+    ),
+
+
+    # =========================
+    # ACCOUNTS
+    # =========================
+
+    path(
+        "accounts/",
+        include("apps.accounts.urls"),
+    ),
+
+
+    # =========================
+    # ORDERS
+    # =========================
+
+    path(
+        "orders/",
+        include("apps.orders.urls"),
+    ),
+
+
+    # =========================
+    # DJANGO ADMIN
+    # =========================
+
+    path(
+        "admin/",
+        admin.site.urls,
+    ),
+
+
+    # =========================
+    # CART
+    # =========================
+
+    path(
+        "cart/",
+        include("apps.cart.urls"),
+    ),
+
+
+    # =========================
+    # PAYMENTS
+    # =========================
+
+    path(
+        "payments/",
+        include("apps.payments.urls"),
+    ),
+
+
+    # =========================
+    # DOWNLOADS
+    # =========================
+
+    path(
+        "downloads/",
+        include("apps.downloads.urls"),
+    ),
+
+
+    # =========================
+    # REVIEWS
+    # =========================
+
+    path(
+        "reviews/",
+        include("apps.reviews.urls"),
+    ),
+
+
+    # =========================
+    # WISHLIST
+    # =========================
+
+    path(
+        "wishlist/",
+        include("apps.wishlist.urls"),
+    ),
+
+
+    # =========================
+    # COUPONS
+    # =========================
+
     path(
         "coupons/",
         include("apps.coupons.urls"),
     ),
+
+
+    # =========================
+    # ANALYTICS
+    # =========================
+
     path(
-    "analytics/",
-    include("apps.analytics.urls"),
+        "analytics/",
+        include("apps.analytics.urls"),
+    ),
+    
+    path(
+    "notifications/",
+    include("apps.notifications.urls"),
 ),
 
 ]
 
+
+# =========================
+# DEVELOPMENT MEDIA FILES
+# =========================
+
 if settings.DEBUG:
+
     urlpatterns += static(
         settings.MEDIA_URL,
         document_root=settings.MEDIA_ROOT,

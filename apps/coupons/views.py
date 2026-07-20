@@ -46,14 +46,19 @@ def apply_coupon(request):
         )
         return redirect("cart:cart")
 
-    discount = CouponService.calculate_discount(
-        coupon,
-        order.total_price,
-    )
-
     order.coupon = coupon
-    order.discount = discount
-    order.save()
+
+    order.discount = CouponService.calculate_discount(
+    coupon,
+    order.total_price,
+)
+
+    order.save(
+    update_fields=[
+        "coupon",
+        "discount",
+    ]
+)
 
     messages.success(
         request,

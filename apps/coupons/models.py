@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.db import models
+from django.utils import timezone
 
 
 class Coupon(models.Model):
@@ -50,8 +51,16 @@ class Coupon(models.Model):
 
     @property
     def is_available(self):
+        """
+            Returns True if the coupon
+            can currently be used.
+        """
+
+        now = timezone.now()
 
         return (
             self.active
-            and self.times_used < self.usage_limit
-        )
+        and self.times_used < self.usage_limit
+        and self.valid_from <= now <= self.valid_until
+    )
+    

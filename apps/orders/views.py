@@ -1,35 +1,71 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404
+from django.shortcuts import (
+    get_object_or_404,
+    redirect,
+    render,
+)
 import os
 
+from apps.analytics.services import AnalyticsService
 from apps.products.models import Product
+
 from .models import Order, OrderItem
 from .services import user_can_access_item
 
 
+# ============================================================
+# CART HELPERS
+# ============================================================
+
 def get_or_create_cart(user):
     """
-    Returns the user's pending cart.
-    Creates one if it doesn't exist.
+    Return the user's pending order.
+
+    A pending Order acts as the user's shopping cart.
     """
 
     order, created = Order.objects.get_or_create(
         user=user,
         status="pending",
-        defaults={"total_price": 0},
+        defaults={
+            "total_price": 0,
+        },
     )
 
     return order
 
 
-# -------------------------
+def recalculate_order_total(order):
+    """
+    Recalculate the order subtotal from its order items.
+    """
+
+    order.total_price = sum(
+        item.price
+        for item in order.items.all()
+    )
+
+    order.save(
+        update_fields=[
+            "total_price",
+            "updated_at",
+        ]
+    )
+
+    return order
+
+
+# ============================================================
 # SINGLE PRODUCT PURCHASE
-# -------------------------
+# ============================================================
 
 @login_required
 def purchase_product(request, slug):
+    """
+    Add a single product to the user's pending cart.
+    """
 
     product = get_object_or_404(
         Product,
@@ -37,7 +73,9 @@ def purchase_product(request, slug):
         active=True,
     )
 
-    order = get_or_create_cart(request.user)
+    order = get_or_create_cart(
+        request.user,
+    )
 
     OrderItem.objects.get_or_create(
         order=order,
@@ -47,24 +85,28 @@ def purchase_product(request, slug):
         },
     )
 
-    # Always recalculate total
-    order.total_price = sum(
-        item.price for item in order.items.all()
+    recalculate_order_total(order)
+
+    messages.success(
+        request,
+        f'"{product.title}" added to your cart.',
     )
-    order.save()
 
     return redirect(
-        "product_detail",
-        slug=slug,
+        "products:product_detail",
+        slug=product.slug,
     )
 
 
-# -------------------------
+# ============================================================
 # CART CHECKOUT
-# -------------------------
+# ============================================================
 
 @login_required
 def checkout(request):
+    """
+    Begin checkout for the user's pending order.
+    """
 
     order = (
         Order.objects
@@ -72,48 +114,35 @@ def checkout(request):
             user=request.user,
             status="pending",
         )
-        .prefetch_related("items")
+        .prefetch_related(
+            "items__product",
+        )
         .first()
     )
 
     if not order or not order.items.exists():
-
         messages.warning(
             request,
             "Your cart is empty.",
         )
 
-        return redirect("cart:cart")
+        return redirect(
+            "cart:cart",
+        )
 
-    # Calculate final price after coupon
+    # The final amount includes any applied coupon discount.
     final_total = order.final_price
 
-    # Prevent negative totals
-    if final_total < 0:
-        final_total = 0
+    # The final_price property already prevents negative totals.
+    if final_total <= 0:
+        messages.info(
+            request,
+            "Your order total is zero. Payment is not required.",
+        )
 
-    # No need to save final_price because it's a property
-
-    return redirect(
-        "payments:start",
-        order_id=order.id,
-    )
-
-    # Calculate final price after coupon
-
-    final_total = order.final_price
-
-
-    # Prevent negative totals
-
-    if final_total < 0:
-        final_total = 0
-
-
-    order.final_price = final_total
-
-    order.save()
-
+        return redirect(
+            "orders:order_success",
+        )
 
     return redirect(
         "payments:start",
@@ -121,26 +150,35 @@ def checkout(request):
     )
 
 
-# -------------------------
-# SUCCESS PAGE
-# -------------------------
+# ============================================================
+# ORDER SUCCESS
+# ============================================================
 
 def order_success(request):
+    """
+    Display the order success page.
+    """
+
     return render(
         request,
         "orders/success.html",
     )
 
 
-# -------------------------
+# ============================================================
 # ORDER DETAIL
-# -------------------------
+# ============================================================
 
 @login_required
 def order_detail(request, order_id):
+    """
+    Display a single order belonging to the current user.
+    """
 
     order = get_object_or_404(
-        Order,
+        Order.objects.prefetch_related(
+            "items__product",
+        ),
         id=order_id,
         user=request.user,
     )
@@ -154,17 +192,27 @@ def order_detail(request, order_id):
     )
 
 
-# -------------------------
+# ============================================================
 # ORDER LIST
-# -------------------------
+# ============================================================
 
 @login_required
 def order_list(request):
+    """
+    Display all orders belonging to the current user.
+    """
 
     orders = (
         Order.objects
-        .filter(user=request.user)
-        .order_by("-created_at")
+        .filter(
+            user=request.user,
+        )
+        .prefetch_related(
+            "items__product",
+        )
+        .order_by(
+            "-created_at",
+        )
     )
 
     return render(
@@ -176,28 +224,72 @@ def order_list(request):
     )
 
 
-# -------------------------
-# SECURE DOWNLOAD SYSTEM
-# -------------------------
+# ============================================================
+# LEGACY SECURE DOWNLOAD
+# ============================================================
 
 @login_required
 def download_product(request, item_id):
+    """
+    Download a purchased product.
+
+    Ownership is verified before allowing the download.
+    """
 
     item = get_object_or_404(
-        OrderItem,
+        OrderItem.objects.select_related(
+            "order",
+            "product",
+        ),
         id=item_id,
+        order__user=request.user,
+        order__status="paid",
     )
 
-    file_path = item.product.download_file.path
+    product = item.product
+
+    if not product:
+        raise Http404(
+            "Product not found."
+        )
+
+    if not product.download_file:
+        raise Http404(
+            "Download file is missing."
+        )
+
+    if not user_can_access_item(
+        request.user,
+        item,
+    ):
+        raise Http404(
+            "You do not have access to this product."
+        )
+
+    file_path = product.download_file.path
 
     if not os.path.exists(file_path):
-        raise Http404("File not found")
+        raise Http404(
+            "File not found."
+        )
 
     item.downloaded = True
-    item.save()
+
+    item.save(
+        update_fields=[
+            "downloaded",
+        ]
+    )
+
+    AnalyticsService.track_download(
+        product=product,
+        user=request.user,
+    )
 
     return FileResponse(
-        open(file_path, "rb"),
+        product.download_file.open("rb"),
         as_attachment=True,
-        filename=os.path.basename(file_path),
+        filename=os.path.basename(
+            product.download_file.name,
+        ),
     )

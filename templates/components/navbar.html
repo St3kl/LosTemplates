@@ -92,12 +92,25 @@
         </a>
     </li>
 
+    {% if user.is_staff %}
+
     <li>
         <a class="dropdown-item"
-           href="{% url 'wishlist:wishlist' %}">
-            ❤️ Wishlist
+           href="{% url 'analytics:dashboard' %}">
+            Analytics
         </a>
     </li>
+
+        <a
+            href="{% url 'accounts:profile' %}"
+            class="dropdown-item"
+        >
+
+                My Profile
+
+        </a>
+
+    {% endif %}
 
     <li><hr class="dropdown-divider"></li>
 
