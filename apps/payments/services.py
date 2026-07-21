@@ -10,6 +10,7 @@ from apps.coupons.services import CouponService
 from apps.downloads.services import DownloadService
 from apps.notifications.services import NotificationService
 from apps.payments.models import Payment
+from django.utils import timezone
 
 
 class PaystackService:
@@ -85,20 +86,46 @@ class PaystackService:
             )
         )
 
-        # Prevent duplicate processing.
         if locked_payment.status == "success":
 
             return {
                 "status": "already_processed",
-            }
+                }
+
+        data = gateway_response.get(
+            "data",
+            {},
+        )
+
+        # if gateway_response.get("status") is not True:
+
+        #     raise ValueError(
+        #         "Gateway response indicates an unsuccessful payment."
+        #     )
+
+        transaction_id = data.get(
+            "id",
+        )
+
+        if not transaction_id:
+
+            raise ValueError(
+                "Gateway response has no transaction ID."
+            )
+
+        if locked_payment.order.user_id != locked_payment.user_id:
+
+            raise ValueError(
+                "Payment user does not match order user."
+            )
 
         locked_payment.status = "success"
 
         locked_payment.transaction_id = str(
-            gateway_response
-            .get("data", {})
-            .get("id"),
+            transaction_id,
         )
+
+        locked_payment.paid_at = timezone.now()
 
         locked_payment.gateway_response = (
             gateway_response
@@ -108,6 +135,7 @@ class PaystackService:
             update_fields=[
                 "status",
                 "transaction_id",
+                "paid_at",
                 "gateway_response",
                 "updated_at",
             ],
@@ -124,25 +152,30 @@ class PaystackService:
             ],
         )
 
-        for item in order.items.select_related(
-            "product",
-        ):
+        order_items = (
+            order.items
+            .select_related(
+                "product",
+            )
+        )
+
+        for item in order_items:
 
             DownloadService.grant_access(
                 locked_payment.user,
                 item.product,
             )
 
-            AnalyticsService.track_sale(
-                product=item.product,
-                user=locked_payment.user,
-                price=item.price,
-            )
+        AnalyticsService.track_sale(
+            product=item.product,
+            user=locked_payment.user,
+            price=item.price,
+        )
 
-            NotificationService.download_ready(
-                locked_payment.user,
-                item.product,
-            )
+        NotificationService.download_ready(
+            locked_payment.user,
+            item.product,
+        )
 
         NotificationService.order_confirmation(
             locked_payment.user,
