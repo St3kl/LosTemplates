@@ -4,6 +4,7 @@ from django.db.models import Count
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
+import os
 from apps.analytics.services import AnalyticsService
 from apps.products.models import Product
 
@@ -46,7 +47,7 @@ def secure_download(request, product_id):
     # File Exists?
     # -----------------------------
 
-    if not product.download_file:
+    if not product.download_file.name:
         raise Http404(
             "Download file missing."
         )
@@ -55,16 +56,21 @@ def secure_download(request, product_id):
     # Log Download
     # -----------------------------
 
+    access = DownloadService.get_access(
+        request.user,
+        product,
+    )
+
     DownloadLog.objects.create(
         user=request.user,
         product=product,
+        order=access.order,
         ip_address=get_client_ip(request),
         user_agent=request.META.get(
             "HTTP_USER_AGENT",
             "",
         ),
     )
-
     # -----------------------------
     # Analytics
     # -----------------------------
@@ -81,7 +87,9 @@ def secure_download(request, product_id):
     return FileResponse(
         product.download_file.open("rb"),
         as_attachment=True,
-        filename=product.download_file.name.split("/")[-1],
+        filename=os.path.basename(
+            product.download_file.name
+        )
     )
 
 

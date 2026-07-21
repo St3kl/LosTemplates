@@ -3,7 +3,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 from apps.products.models import Product
-
+from apps.orders.models import Order
 
 class UserProductAccess(models.Model):
     """
@@ -49,6 +49,12 @@ class DownloadLog(models.Model):
         on_delete=models.CASCADE,
         related_name="download_logs",
     )
+    
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="download_logs",
+    )
 
     ip_address = models.GenericIPAddressField(null=True, blank=True)
 
@@ -57,4 +63,8 @@ class DownloadLog(models.Model):
     downloaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user} → {self.product}"
+        return (
+            f"{self.user.username} downloaded "
+            f"{self.product.title} "
+            f"on {self.downloaded_at:%Y-%m-%d %H:%M}"
+        )
